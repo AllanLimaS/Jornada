@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="grid-2-cols">
+    
+    <!-- Esquerda: Formulário de Nova Atividade -->
+    <div>
+        {% include "partials/atividade_form.html" %}
+    </div>
+
+    <!-- Direita: Timeline do Dia -->
+    <div>
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-xl font-semibold">Linha do Tempo</h2>
+            <div class="badge badge-outline text-sm">Resumo do dia: <span id="total-horas-dia" class="font-semibold" style="margin-left: 4px;">0h 0m</span></div>
+        </div>
+
+        <!-- HTMX carrega a lista aqui ao iniciar a pagina -->
+        <div id="timeline-list" hx-get="/htmx/atividades/timeline" hx-trigger="load">
+            <div class="empty-state">
+                Carregando atividades...
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

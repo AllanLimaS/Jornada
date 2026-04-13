@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+<section class="card">
+    <h2>Registro Diário</h2>
+    <p>O backend está configurado com sucesso! A partir daqui, as requisições em JSON estão disponíveis em <code>/api/v1/</code>, e as páginas HTML renderizadas diretamente pelo servidor estão nesta camada.</p>
+    
+    <div style="margin-top: 2rem;">
+        <h3>Ações Rápidas</h3>
+        <ul>
+            <li>Acesse <a href="/docs">/docs</a> para testar o CRUD e lógicas pelo formato Swagger.</li>
+            <li>Adicione botões com atributos HTMX neste arquivo para chamar requisições interativas sem sair da página!</li>
+        </ul>
+    </div>
+</section>
+{% endblock %}

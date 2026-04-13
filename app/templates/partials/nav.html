@@ -1,0 +1,101 @@
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="brand">
+            <!-- Icone Minimalista (Lucide Box) -->
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                <line x1="12" y1="22.08" x2="12" y2="12"></line>
+            </svg>
+            Jornada
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <ul>
+            <li>
+                <a href="/" class="nav-link {% if active_page == 'hoje' %}active{% endif %}">
+                    <!-- Icone de Calendario/Dia (Lucide Calendar Days) -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                        <line x1="16" y1="2" x2="16" y2="6"></line>
+                        <line x1="8" y1="2" x2="8" y2="6"></line>
+                        <line x1="3" y1="10" x2="21" y2="10"></line>
+                        <path d="M8 14h.01"></path><path d="M12 14h.01"></path><path d="M16 14h.01"></path><path d="M8 18h.01"></path><path d="M12 18h.01"></path><path d="M16 18h.01"></path>
+                    </svg>
+                    Hoje
+                </a>
+            </li>
+            <li>
+                <a href="/calendario" class="nav-link {% if active_page == 'calendario' %}active{% endif %}">
+                    <!-- Icone Calendario Mensal (Lucide Calendar) -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/>
+                    </svg>
+                    Calendário
+                </a>
+            </li>
+            <li>
+                <a href="/chamados" class="nav-link {% if active_page == 'chamados' %}active{% endif %}">
+                    <!-- Icone Lista Chamados (Lucide Clipboard List) -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="8" y="2" width="8" height="4" rx="1" ry="1"></rect>
+                        <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"></path>
+                        <path d="M12 11h4"></path>
+                        <path d="M12 16h4"></path>
+                        <path d="M8 11h.01"></path>
+                        <path d="M8 16h.01"></path>
+                    </svg>
+                    Chamados
+                </a>
+            </li>
+            <li>
+                <a href="/atividades-lista" class="nav-link {% if active_page == 'atividades_lista' %}active{% endif %}">
+                    <!-- Icone Atividades (Lucide ListTodo) -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 12H3"/><path d="M16 6H3"/><path d="M12 18H3"/><path d="m16 18 2 2 4-4"/>
+                    </svg>
+                    Atividades
+                </a>
+            </li>
+            <li>
+                <a href="/relatorios" class="nav-link {% if active_page == 'relatorios' %}active{% endif %}">
+                    <!-- Icone Grafico (Lucide Bar Chart) -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="12" y1="20" x2="12" y2="10"></line>
+                        <line x1="18" y1="20" x2="18" y2="4"></line>
+                        <line x1="6" y1="20" x2="6" y2="14"></line>
+                    </svg>
+                    Relatórios
+                </a>
+            </li>
+            <li>
+                <a href="/categorias-chamado" class="nav-link {% if active_page == 'categorias_chamado' %}active{% endif %}">
+                    <!-- Icone Categorias (Lucide Tags) -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m2 7 4.41-4.41A2 2 0 0 1 7.83 2h8.34a2 2 0 0 1 1.42.59L22 7"/><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><path d="M15 22v-4a2 2 0 0 0-2-2h-2a2 2 0 0 0-2 2v4"/><path d="M2 7h20"/><path d="M22 7v3a2 2 0 0 1-2 2v0a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 16 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 12 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 8 12a2.7 2.7 0 0 1-1.59-.63.7.7 0 0 0-.82 0A2.7 2.7 0 0 1 4 12v0a2 2 0 0 1-2-2Z"/>
+                    </svg>
+                    Categorias
+                </a>
+            </li>
+            <li>
+                <a href="/status-chamado" class="nav-link {% if active_page == 'status_chamado' %}active{% endif %}">
+                    <!-- Icone Status (Lucide Milestone) -->
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 6H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h13l4-3.5L18 6Z"/><path d="M12 13v8"/><path d="M12 3v3"/>
+                    </svg>
+                    Status
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Botão de Tema Fixado no Rodapé da Sidebar -->
+    <div style="margin-top: auto; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; justify-content: flex-start;">
+        <button id="theme-toggle" class="btn btn-ghost" style="padding: 0.5rem;" title="Alternar tema">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+            </svg>
+        </button>
+    </div>
+</aside>

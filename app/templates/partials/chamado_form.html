@@ -1,0 +1,89 @@
+<div class="modal-header">
+    <h3 class="modal-title">
+        {% if chamado %}Detalhes do Chamado: #{{ chamado.numero }}{% else %}Adicionar Novo Chamado{% endif %}
+    </h3>
+    <button class="btn btn-ghost" onclick="document.getElementById('{% if chamado %}edit-chamado-modal{% else %}new-chamado-modal{% endif %}').classList.remove('active')" style="padding: 0.25rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    </button>
+</div>
+
+<div class="modal-dual-panel">
+    <!-- Coluna Esquerda: Formulário -->
+    <div style="{% if not chamado %}flex: 1; border-right: none;{% endif %}">
+        <div class="modal-column-title">{% if chamado %}Editar Informações{% else %}Informações Básicas{% endif %}</div>
+        <form 
+            {% if chamado %}
+            hx-patch="/htmx/chamados/{{ chamado.id }}"
+            {% else %}
+            hx-post="/htmx/chamados"
+            {% endif %}
+            hx-target="#chamados-list" 
+            hx-swap="outerHTML" 
+            onsubmit="document.getElementById('{% if chamado %}edit-chamado-modal{% else %}new-chamado-modal{% endif %}').classList.remove('active')">
+            
+            <div class="form-group row">
+                <div>
+                    <label class="form-label">Número</label>
+                    <input type="text" name="numero" class="form-control" value="{{ chamado.numero if chamado else '' }}" required placeholder="Ex: 12345" tabindex="1">
+                </div>
+                <div>
+                    <label class="form-label">Categoria</label>
+                    <select name="categoria_id" class="form-control" tabindex="2">
+                        <option value="">Sem Categoria</option>
+                        {% for cat in categorias %}
+                        <option value="{{ cat.id }}" {% if chamado and chamado.categoria_id == cat.id %}selected{% endif %}>{{ cat.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label">Status</label>
+                    <select name="status_id" class="form-control" required tabindex="3">
+                        {% for st in statuses %}
+                        <option value="{{ st.id }}" {% if chamado and chamado.status_id == st.id %}selected{% elif not chamado and st.nome == 'Em Atendimento' %}selected{% endif %}>{{ st.nome }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Título</label>
+                <input type="text" name="titulo" class="form-control" value="{{ chamado.titulo if chamado else '' }}" required placeholder="Resumo do chamado" tabindex="4">
+            </div>
+            
+            <div class="form-group">
+                <label class="form-label">Descrição</label>
+                <textarea name="descricao" class="form-control" placeholder="Informações detalhadas..." tabindex="5" rows="1">{{ chamado.descricao if chamado else '' }}</textarea>
+            </div>
+            
+            <div class="mt-6" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                <button type="button" class="btn btn-ghost" onclick="document.getElementById('{% if chamado %}edit-chamado-modal{% else %}new-chamado-modal{% endif %}').classList.remove('active')" tabindex="7">Cancelar</button>
+                <button type="submit" class="btn btn-primary" tabindex="6">
+                    {% if chamado %}Salvar Alterações{% else %}Criar Chamado{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Coluna Direita: Atividades (Apenas Visível na Edição) -->
+    {% if chamado %}
+    <div>
+        <div class="modal-column-title">Últimas Atividades</div>
+        <div class="modal-activities-list">
+            {% if atividades %}
+                {% for atv in atividades %}
+                <div class="modal-activity-item">
+                    <div class="modal-activity-date">
+                        {{ atv.data_referencia.strftime('%d/%m/%Y') }} | {{ atv.hora_inicio.strftime('%H:%M') }} - {{ atv.hora_fim.strftime('%H:%M') }}
+                    </div>
+                    <div class="modal-activity-desc">{{ atv.descricao }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state" style="padding: 1.5rem; font-size: 0.8125rem;">
+                    Nenhuma atividade registrada para este chamado.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
+</div>

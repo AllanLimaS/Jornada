@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h2 class="text-xl font-semibold">Gestão de Chamados</h2>
+    <button class="btn btn-primary" 
+            hx-get="/htmx/chamados/form-new" 
+            hx-target="#new-chamado-content" 
+            onclick="document.getElementById('new-chamado-modal').classList.add('active')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:0.25rem"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Novo Chamado
+    </button>
+</div>
+
+<!-- Modal de Adição (Unificado via htmx) -->
+<div id="new-chamado-modal" class="modal-overlay">
+    <div class="modal-dialog modal-lg" id="new-chamado-content">
+        <!-- Conteúdo carregado via HTMX (/htmx/chamados/form-new) -->
+        <div class="empty-state">Carregando formulário...</div>
+    </div>
+</div>
+
+<!-- Modal de Edição/Detalhes (Unificado via htmx) -->
+<div id="edit-chamado-modal" class="modal-overlay">
+    <div class="modal-dialog modal-lg" id="edit-chamado-content">
+        <!-- Conteúdo carregado via HTMX (/htmx/chamados/{id}/modal) -->
+        <div class="empty-state">Carregando detalhes...</div>
+    </div>
+</div>
+
+<!-- Barra de Busca -->
+<div class="form-group">
+    <input class="form-control" type="search" 
+           name="q" placeholder="Buscar chamados por número ou título..." 
+           hx-get="/htmx/chamados/search" 
+           hx-trigger="keyup changed delay:500ms, search" 
+           hx-target="#chamados-list" 
+           hx-indicator=".htmx-indicator">
+</div>
+
+<!-- Listagem Central -->
+<div class="card mt-4">
+    <div id="chamados-list" hx-get="/htmx/chamados/list" hx-trigger="load">
+        <div class="empty-state">Carregando lista de chamados...</div>
+    </div>
+</div>
+{% endblock %}

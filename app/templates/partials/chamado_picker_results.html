@@ -1,0 +1,26 @@
+<!-- Resultados do Chamado Picker (carregado via HTMX) -->
+{% if chamados %}
+<ul class="chamado-picker-list">
+    {% if not is_search %}
+    <li class="chamado-picker-section-title">Usados recentemente</li>
+    {% endif %}
+    {% for chamado in chamados %}
+    <li class="chamado-picker-item" 
+        data-id="{{ chamado.id }}"
+        data-numero="{{ chamado.numero }}"
+        data-titulo="{{ chamado.titulo | e }}"
+        tabindex="0">
+        <span class="chamado-picker-numero">#{{ chamado.numero }}</span>
+        <span class="chamado-picker-titulo">{{ chamado.titulo }}</span>
+    </li>
+    {% endfor %}
+</ul>
+{% else %}
+<div class="chamado-picker-empty">
+    {% if is_search %}
+    Nenhum chamado encontrado
+    {% else %}
+    Nenhum chamado com atividades vinculadas
+    {% endif %}
+</div>
+{% endif %}

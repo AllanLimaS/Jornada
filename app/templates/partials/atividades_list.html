@@ -1,0 +1,43 @@
+<div id="atividades-list">
+    {% if atividades %}
+        <div class="timeline">
+            {% for atv in atividades %}
+            <div class="timeline-item">
+                <div class="timeline-time">{{ atv.hora_inicio.strftime('%H:%M') }} - {{ atv.hora_fim.strftime('%H:%M') }}</div>
+                <div class="timeline-content">
+                    <div class="timeline-desc">{{ atv.descricao }}</div>
+                    <div class="timeline-meta" style="display: flex; align-items: center; justify-content: space-between;">
+                        <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;">
+                            <span class="badge badge-status {% if atv.portal_status.value == 'pendente' %}status-rascunho{% else %}status-lancado{% endif %}">
+                                {{ atv.portal_status.value }}
+                            </span>
+                            <span>{{ atv.duracao_minutos }} min</span>
+                            {% if atv.chamado_id %}
+                                {% set ch = chamados_map.get(atv.chamado_id) if chamados_map else None %}
+                                <span class="badge badge-chamado">{{ ch.titulo if ch else ('Chamado #' ~ atv.chamado_id) }}</span>
+                            {% endif %}
+                            <a href="javascript:void(0)" class="text-sm text-muted" style="text-decoration: underline;" 
+                               hx-get="/htmx/atividades/{{ atv.id }}/form-edit?context=atividades" 
+                               hx-target="closest .timeline-item" 
+                               hx-swap="outerHTML">Editar</a>
+                        </div>
+
+                        <!-- Botão Marcar Lancado (Para abas pendente/todos) -->
+                        {% if atv.portal_status.value == 'pendente' and aba != 'lancados' %}
+                        <form hx-patch="/htmx/atividades/{{ atv.id }}/status" hx-target="#atividades-list">
+                            <input type="hidden" name="status" value="lancado">
+                            <input type="hidden" name="aba" value="{{ aba }}">
+                            <button class="btn btn-secondary text-sm" style="padding: 0.25rem 0.5rem;">Marcar Lançado</button>
+                        </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <p>Nenhuma atividade encontrada para a aba "{{ aba.capitalize() if aba else 'Todos' }}".</p>
+        </div>
+    {% endif %}
+</div>

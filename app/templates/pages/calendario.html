@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-6">
+    <h2 class="text-xl font-semibold">Calendário</h2>
+    <p class="text-sm text-muted mt-2">Escolha uma data à esquerda para visualizar sua linha do tempo no lado direito.</p>
+</div>
+
+<div class="grid-2-cols">
+    <!-- Esquerda: Seleção de Calendário (Simples) -->
+    <div>
+        <div class="card">
+            <h3 class="card-title">Selecionar Data</h3>
+            
+            <div class="form-group" style="display: flex; justify-content: center;">
+                <!-- O input real onde o HTMX observa -->
+                <input type="text" id="inline-calendar" name="data_ref" value="{{ data_atual }}"
+                       class="form-control"
+                       style="display:none;" 
+                       hx-get="/htmx/atividades/calendario" 
+                       hx-target="#calendario-timeline"
+                       hx-trigger="change">
+            </div>
+            
+            <script>
+                // Inicializamos diretamente (com pequeno delay pra garantir renderização)
+                setTimeout(function(){
+                    flatpickr("#inline-calendar", {
+                        inline: true,
+                        locale: "pt",
+                        defaultDate: "today",
+                        onReady: function(selectedDates, dateStr, instance) {
+                            // Ao carregar, dispara o evento manual para carregar atividades de hoje
+                            const input = document.getElementById("inline-calendar");
+                            if (input && input.value) {
+                                input.dispatchEvent(new Event('change', { bubbles: true }));
+                            }
+                        },
+                        onChange: function(selectedDates, dateStr, instance) {
+                            const input = document.getElementById("inline-calendar");
+                            input.value = dateStr;
+                            input.dispatchEvent(new Event('change', { bubbles: true }));
+                        }
+                    });
+                }, 50);
+            </script>
+            
+            <p class="text-sm text-muted mt-4">
+                Selecione um dia acima para carregar as atividades daquela data.
+            </p>
+        </div>
+    </div>
+
+    <!-- Direita: Timeline do dia selecionado -->
+    <div>
+        <div class="card">
+            <h3 class="card-title mb-4">Linha do Tempo</h3>
+            <div id="calendario-timeline">
+                <div class="empty-state">
+                    Lembre-se de conectar a lógica do backend após as atualizações.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

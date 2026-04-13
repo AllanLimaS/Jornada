@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h2 class="text-xl font-semibold">Gerenciar Categorias de Chamado</h2>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Formulario para nova Categoria -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Nova Categoria</h3>
+        </div>
+        
+        <form hx-post="/htmx/categorias-chamado" hx-target="#categorias-list" hx-swap="innerHTML" class="js-reset-on-success">
+            <div class="form-group">
+                <label class="form-label">Nome da Categoria</label>
+                <input type="text" name="nome" class="form-control" required placeholder="Ex: Infraestrutura, Software...">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Cor</label>
+                <input type="color" name="cor" class="form-control" style="height: 45px; padding: 0.25rem;" value="#333333">
+            </div>
+            
+            <div class="mt-6">
+                <button type="submit" class="btn btn-primary btn-block">Salvar Categoria</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabela de Categorias -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title mb-4">Categorias Cadastradas</h3>
+        </div>
+        
+        <div id="categorias-list" hx-get="/htmx/categorias-chamado/list" hx-trigger="load">
+            <div class="empty-state">Carregando categorias...</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

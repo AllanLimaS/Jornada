@@ -1,0 +1,71 @@
+{% if chamados %}
+<div style="overflow-x: auto;">
+    <table style="width: 100%; border-collapse: collapse; text-align: left;">
+        <thead>
+            <tr style="border-bottom: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.875rem;">
+                <th style="padding: 1rem 0.5rem; font-weight: 500;">Número</th>
+                <th style="padding: 1rem 0.5rem; font-weight: 500;">Título</th>
+                <th style="padding: 1rem 0.5rem; font-weight: 500;">Categoria</th>
+                <th style="padding: 1rem 0.5rem; font-weight: 500;">Última Atividade</th>
+                <th style="padding: 1rem 0.5rem; font-weight: 500;">Status</th>
+                <th style="padding: 1rem 0.5rem; font-weight: 500; text-align: right;">Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ch in chamados %}
+            {% set cat = categorias_map.get(ch.categoria_id) %}
+            {% set st = statuses_map.get(ch.status_id) %}
+            <tr style="border-bottom: 1px solid var(--border-color-strong); transition: var(--transition);">
+                <td style="padding: 1rem 0.5rem; font-weight: 600;">{{ ch.numero }}</td>
+                <td style="padding: 1rem 0.5rem; color: var(--text-main); cursor: pointer;" 
+                    hx-get="/htmx/chamados/{{ ch.id }}/modal" 
+                    hx-target="#edit-chamado-content" 
+                    onclick="document.getElementById('edit-chamado-modal').classList.add('active')">
+                    {{ ch.titulo }}
+                </td>
+                <td style="padding: 1rem 0.5rem;">
+                    {% if cat %}
+                    <span class="badge" style="background-color: {{ cat.cor }}22; color: {{ cat.cor }}; border-color: {{ cat.cor }}44;">
+                        {{ cat.nome }}
+                    </span>
+                    {% else %}
+                    <span style="color: var(--text-placeholder);">—</span>
+                    {% endif %}
+                </td>
+                <td style="padding: 1rem 0.5rem; color: var(--text-muted); font-size: 0.8125rem;">
+                    {% if ch._ultima_atv %}
+                    {{ ch._ultima_atv }}
+                    {% else %}
+                    <span style="color: var(--text-placeholder);">—</span>
+                    {% endif %}
+                </td>
+                <td style="padding: 1rem 0.5rem;">
+                    {% if st %}
+                    <span class="badge" style="background-color: {{ st.cor }}; color: white; border: none; font-size: 0.65rem;">
+                        {{ st.nome.upper() }}
+                    </span>
+                    {% else %}
+                    <span class="badge badge-outline" style="font-size: 0.65rem;">SEM STATUS</span>
+                    {% endif %}
+                </td>
+                <td style="padding: 1rem 0.5rem; text-align: right;">
+                    <button class="btn btn-ghost" style="padding:0.25rem"
+                            hx-get="/htmx/chamados/{{ ch.id }}/modal" 
+                            hx-target="#edit-chamado-content" 
+                            onclick="document.getElementById('edit-chamado-modal').classList.add('active')">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                    </button>
+                    <button class="btn btn-ghost" style="padding:0.25rem" hx-delete="/htmx/chamados/{{ ch.id }}" hx-target="#chamados-list" hx-confirm="Excluir chamado?">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+                    </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="empty-state">
+    Nenhum chamado encontrado.
+</div>
+{% endif %}

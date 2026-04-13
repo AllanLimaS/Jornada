@@ -1,0 +1,122 @@
+<div class="card" id="atividade-form-container">
+    <div class="flex items-center justify-between mb-4">
+        <h2 class="card-title" style="margin-bottom: 0;" id="form-title">
+            {% if atividade %}Editar Atividade{% else %}Registrar Atividade{% endif %}
+        </h2>
+        {% if atividade %}
+        <button class="btn btn-ghost text-sm" style="padding: 0.25rem 0.5rem" hx-get="/htmx/atividades/form-new" hx-target="#atividade-form-container" hx-swap="outerHTML">
+            Nova Atividade
+        </button>
+        {% endif %}
+    </div>
+    
+    <!-- Formulário dinâmico. Se for edição, chama PATCH. Se for criação, chama POST. -->
+    <form 
+        {% if atividade %}
+        hx-patch="/htmx/atividades/{{ atividade.id }}"
+        {% else %}
+        hx-post="/htmx/atividades" 
+        {% endif %}
+        {% if edit_context == 'atividades' %}
+        hx-target="#atividades-list"
+        {% else %}
+        hx-target="#timeline-list" 
+        {% endif %}
+        hx-swap="outerHTML" 
+        class="{% if not atividade %}js-reset-on-success{% endif %}">
+        
+        <!-- Contexto de edição (para o PATCH saber o que re-renderizar) -->
+        {% if edit_context %}
+        <input type="hidden" name="edit_context" value="{{ edit_context }}">
+        {% endif %}
+
+        <div class="form-group row">
+            <div>
+                <label class="form-label">Data</label>
+                <!-- Preenche a data se houver atividade, senão a atual -->
+                <input type="date" name="data_referencia" class="form-control" value="{{ atividade.data_referencia if atividade else hoje_date }}" required tabindex="1">
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div>
+                <label class="form-label">Início</label>
+                <input type="time" name="hora_inicio" class="form-control" value="{{ atividade.hora_inicio.strftime('%H:%M') if atividade else '' }}" required tabindex="2">
+            </div>
+            <div>
+                <label class="form-label">Fim</label>
+                <input type="time" name="hora_fim" class="form-control" value="{{ atividade.hora_fim.strftime('%H:%M') if atividade else '' }}" required tabindex="3">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Descrição</label>
+            <textarea name="descricao" class="form-control" placeholder="O que você fez?" required tabindex="4" rows="1">{{ atividade.descricao if atividade else '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label">Chamado (Opcional)</label>
+            <!-- Hidden input que será enviado no form -->
+            <input type="hidden" name="chamado_id" id="chamado-id-input" value="{{ atividade.chamado_id if atividade and atividade.chamado_id else '' }}">
+            
+            <!-- Campo visual clicável -->
+            <div class="chamado-picker-trigger form-control" id="chamado-picker-trigger" tabindex="5">
+                {% if atividade and atividade.chamado_id and chamados_map %}
+                    {% set ch = chamados_map.get(atividade.chamado_id) %}
+                    <span class="chamado-picker-selected" id="chamado-display">
+                        <span class="badge badge-chamado">#{{ ch.numero if ch else atividade.chamado_id }}</span>
+                        {% if ch %}<span class="chamado-picker-selected-title">{{ ch.titulo }}</span>{% endif %}
+                    </span>
+                {% elif atividade and atividade.chamado_id %}
+                <span class="chamado-picker-selected" id="chamado-display">
+                    <span class="badge badge-chamado">#{{ atividade.chamado_id }}</span>
+                </span>
+                {% else %}
+                <span class="chamado-picker-placeholder" id="chamado-display">Selecionar chamado...</span>
+                {% endif %}
+            </div>
+
+            <!-- Botão limpar -->
+            <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem;">
+                <span class="badge badge-outline" style="cursor: pointer;" id="chamado-clear-btn">Sem Chamado</span>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label class="form-label">Status no Portal</label>
+            <select name="portal_status" class="form-control" tabindex="6">
+                <option value="pendente" {% if atividade and atividade.portal_status.value == 'pendente' %}selected{% endif %}>Pendente</option>
+                <option value="lancado" {% if atividade and atividade.portal_status.value == 'lancado' %}selected{% endif %}>Lançado</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block mt-4" tabindex="7">
+            {% if atividade %}Salvar Edição{% else %}Salvar Atividade{% endif %}
+        </button>
+    </form>
+</div>
+
+<!-- Chamado Picker Popup (fora do card e do form) -->
+<div class="chamado-picker-overlay" id="chamado-picker-overlay" style="display: none;">
+    <div class="chamado-picker-popup" id="chamado-picker-popup">
+        <div class="chamado-picker-header">
+            <span class="chamado-picker-header-title">Selecionar Chamado</span>
+            <button type="button" class="btn btn-ghost" style="padding: 0.25rem 0.5rem; font-size: 1rem;" id="chamado-picker-close">✕</button>
+        </div>
+        <div class="chamado-picker-search">
+            <input type="search" 
+                   class="form-control" 
+                   placeholder="Buscar por título ou número..." 
+                   id="chamado-picker-search-input"
+                   autocomplete="off"
+                   hx-get="/htmx/chamado-picker/search" 
+                   hx-trigger="input changed delay:300ms, search" 
+                   hx-target="#chamado-picker-results"
+                   hx-swap="innerHTML"
+                   name="q">
+        </div>
+        <div id="chamado-picker-results">
+            <!-- Conteúdo carregado via HTMX -->
+        </div>
+    </div>
+</div>

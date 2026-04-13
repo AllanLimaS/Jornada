@@ -1,0 +1,41 @@
+{% if atividades %}
+<div class="timeline" id="timeline-container">
+    {% for atv in atividades %}
+    <!-- Envolve o item para ser clicável usando HTMX para recarregar o form -->
+    <div class="timeline-item" style="cursor: pointer;" hx-get="/htmx/atividades/{{ atv.id }}/form-edit" hx-target="#atividade-form-container" hx-swap="outerHTML">
+        <div class="timeline-time">{{ atv.hora_inicio.strftime('%H:%M') }} - {{ atv.hora_fim.strftime('%H:%M') }}</div>
+        <div class="timeline-content">
+            <div class="timeline-desc">{{ atv.descricao }}</div>
+            <div class="timeline-meta">
+                {% if atv.chamado_id %}
+                {% set ch = chamados_map.get(atv.chamado_id) if chamados_map else None %}
+                <span class="badge badge-chamado">{{ ch.titulo if ch else ('Chamado #' ~ atv.chamado_id) }}</span>
+                {% else %}
+                <span class="badge badge-outline">S/ Chamado</span>
+                {% endif %}
+                
+                <span>|</span>
+                <span class="badge badge-status status-{{ atv.portal_status.value }}">{{ atv.portal_status.value }}</span>
+            </div>
+        </div>
+        <!-- Botão de deletar opcional via HTMX com stop propagation -->
+        <div>
+            <button class="btn btn-ghost" style="padding:0.25rem" hx-delete="/htmx/atividades/{{ atv.id }}" hx-target="#timeline-list" hx-confirm="Tem certeza que deseja apagar?" onclick="event.stopPropagation()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+            </button>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Usando OOB swap para atualizar o total de horas no painel -->
+<div hx-swap-oob="innerHTML:#total-horas-dia">
+    {{ total_horas }}h {{ total_minutos }}m
+</div>
+
+{% else %}
+<div class="empty-state">
+    Nenhuma atividade registrada para hoje.
+</div>
+<div hx-swap-oob="innerHTML:#total-horas-dia">0h 0m</div>
+{% endif %}

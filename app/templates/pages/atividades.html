@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h2 class="text-xl font-semibold">Minhas Atividades</h2>
+    
+    <div class="tabs">
+        <button class="tab-item {% if not aba or aba == 'todos' %}active{% endif %}" hx-get="/htmx/atividades/lista?aba=todos" hx-target="#atividades-container">Todos</button>
+        <button class="tab-item {% if aba == 'pendentes' %}active{% endif %}" hx-get="/htmx/atividades/lista?aba=pendentes" hx-target="#atividades-container">Pendentes</button>
+        <button class="tab-item {% if aba == 'lancados' %}active{% endif %}" hx-get="/htmx/atividades/lista?aba=lancados" hx-target="#atividades-container">Lançados</button>
+    </div>
+</div>
+
+<div class="card">
+    <div id="atividades-container" hx-get="/htmx/atividades/lista?aba=todos" hx-trigger="load">
+        <div class="empty-state">
+            Carregando atividades...
+        </div>
+    </div>
+</div>
+{% endblock %}

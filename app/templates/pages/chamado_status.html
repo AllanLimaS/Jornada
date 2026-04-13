@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <h2 class="text-xl font-semibold">Gerenciar Status de Chamado</h2>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Formulario para novo Status -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title">Novo Status</h3>
+        </div>
+        
+        <form hx-post="/htmx/status-chamado" hx-target="#status-list" hx-swap="innerHTML" class="js-reset-on-success">
+            <div class="form-group">
+                <label class="form-label">Nome do Status</label>
+                <input type="text" name="nome" class="form-control" required placeholder="Ex: Em Atendimento, Urgente...">
+            </div>
+            <div class="form-group">
+                <label class="form-label">Cor Inicial</label>
+                <input type="color" name="cor" class="form-control" style="height: 45px; padding: 0.25rem;" value="#3B82F6">
+            </div>
+            
+            <div class="mt-6">
+                <button type="submit" class="btn btn-primary btn-block">Salvar Status</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Tabela de Status -->
+    <div class="card">
+        <div class="card-header">
+            <h3 class="card-title mb-4">Status Cadastrados</h3>
+        </div>
+        
+        <div id="status-list" hx-get="/htmx/status-chamado/list" hx-trigger="load">
+            <div class="empty-state">Carregando status...</div>
+        </div>
+    </div>
+</div>
+{% endblock %}
