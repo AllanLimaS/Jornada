@@ -6,7 +6,7 @@ from sqlmodel import Session, select
 from app.database import create_db_and_tables, engine
 # Importante importar os modelos aqui para que o create_all do metadata saiba sobre eles
 from app import models
-from app.routers import atividades, chamados, chamado_categorias, chamado_status, pages
+from app.routers import atividades, chamados, chamado_categorias, chamado_status, pages, expediente, sprint
 
 def init_seeds():
     """Insere dados iniciais se as tabelas estiverem vazias."""
@@ -50,6 +50,8 @@ app.include_router(atividades.router)
 app.include_router(chamados.router)
 app.include_router(chamado_categorias.router)
 app.include_router(chamado_status.router)
+app.include_router(expediente.router)
+app.include_router(sprint.router)
 app.include_router(pages.router)
 
 @app.get("/api/health")

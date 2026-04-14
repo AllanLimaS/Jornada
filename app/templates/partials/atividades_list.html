@@ -17,9 +17,8 @@
                                 <span class="badge badge-chamado">{{ ch.titulo if ch else ('Chamado #' ~ atv.chamado_id) }}</span>
                             {% endif %}
                             <a href="javascript:void(0)" class="text-sm text-muted" style="text-decoration: underline;" 
-                               hx-get="/htmx/atividades/{{ atv.id }}/form-edit?context=atividades" 
-                               hx-target="closest .timeline-item" 
-                               hx-swap="outerHTML">Editar</a>
+                               hx-get="/htmx/atividades/{{ atv.id }}/form-edit?edit_context=atividades" 
+                               hx-target="#global-modal-body">Editar</a>
                         </div>
 
                         <!-- Botão Marcar Lancado (Para abas pendente/todos) -->

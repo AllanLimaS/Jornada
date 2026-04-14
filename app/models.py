@@ -57,3 +57,23 @@ class Atividade(AtividadeBase, table=True):
     id: int | None = Field(default=None, primary_key=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class Expediente(SQLModel, table=True):
+    __tablename__ = "expediente"
+    data: date = Field(primary_key=True) # Um registro por dia
+    entrada_1: time | None = Field(default=None)
+    saida_1: time | None = Field(default=None)
+    entrada_2: time | None = Field(default=None)
+    saida_2: time | None = Field(default=None)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+class Sprint(SQLModel, table=True):
+    __tablename__ = "sprint"
+    id: int | None = Field(default=None, primary_key=True)
+    nome: str
+    data_inicio: date
+    data_fim: date
+    conteudo_markdown: str = Field(default="")
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)

@@ -52,6 +52,28 @@ async def htmx_create_categoria(
     chamado_categoria_service.create_categoria(session, cat_in)
     return _render_categorias_list(request, session)
 
+@router.get("/htmx/categorias-chamado/form-new")
+def htmx_get_new_categoria_form(request: Request):
+    return templates.TemplateResponse("partials/categoria_form.html", {"request": request, "categoria": None})
+
+@router.get("/htmx/categorias-chamado/{categoria_id}/form-edit")
+def htmx_get_categoria_form(request: Request, categoria_id: int, session: Session = Depends(get_session)):
+    import app.models as models
+    categoria = session.get(models.ChamadoCategoria, categoria_id)
+    return templates.TemplateResponse("partials/categoria_form.html", {"request": request, "categoria": categoria})
+
+@router.patch("/htmx/categorias-chamado/{categoria_id}")
+async def htmx_update_categoria(
+    request: Request,
+    categoria_id: int,
+    nome: str = Form(...),
+    cor: str = Form("#333333"),
+    session: Session = Depends(get_session)
+):
+    cat_update = schemas.ChamadoCategoriaUpdate(nome=nome, cor=cor)
+    chamado_categoria_service.update_categoria(session, categoria_id, cat_update)
+    return _render_categorias_list(request, session)
+
 @router.delete("/htmx/categorias-chamado/{categoria_id}")
 def htmx_delete_categoria(request: Request, categoria_id: int, session: Session = Depends(get_session)):
     chamado_categoria_service.delete_categoria(session, categoria_id)

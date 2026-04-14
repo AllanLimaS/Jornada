@@ -52,6 +52,28 @@ async def htmx_create_status(
     chamado_status_service.create_status(session, status_in)
     return _render_status_list(request, session)
 
+@router.get("/htmx/status-chamado/form-new")
+def htmx_get_new_status_form(request: Request):
+    return templates.TemplateResponse("partials/status_form.html", {"request": request, "status_obj": None})
+
+@router.get("/htmx/status-chamado/{status_id}/form-edit")
+def htmx_get_status_form(request: Request, status_id: int, session: Session = Depends(get_session)):
+    import app.models as models
+    status_obj = session.get(models.ChamadoStatus, status_id)
+    return templates.TemplateResponse("partials/status_form.html", {"request": request, "status_obj": status_obj})
+
+@router.patch("/htmx/status-chamado/{status_id}")
+async def htmx_update_status(
+    request: Request,
+    status_id: int,
+    nome: str = Form(...),
+    cor: str = Form("#3B82F6"),
+    session: Session = Depends(get_session)
+):
+    status_update = schemas.ChamadoStatusUpdate(nome=nome, cor=cor)
+    chamado_status_service.update_status(session, status_id, status_update)
+    return _render_status_list(request, session)
+
 @router.delete("/htmx/status-chamado/{status_id}")
 def htmx_delete_status(request: Request, status_id: int, session: Session = Depends(get_session)):
     chamado_status_service.delete_status(session, status_id)

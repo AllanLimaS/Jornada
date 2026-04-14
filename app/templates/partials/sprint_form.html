@@ -1,0 +1,42 @@
+<div class="card p-6">
+    <h2 class="text-xl font-semibold mb-6">
+        {% if sprint %}Editar Sprint{% else %}Nova Sprint{% endif %}
+    </h2>
+
+    <form hx-post="/htmx/sprint/save" hx-target="#sprint-list-container" class="space-y-6">
+        {% if sprint %}
+        <input type="hidden" name="sprint_id" value="{{ sprint.id }}">
+        {% endif %}
+
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 items-end">
+            <div class="form-group mb-0">
+                <label for="f_data_inicio">Início</label>
+                <input type="date" id="f_data_inicio" name="data_inicio" class="input" 
+                       value="{{ sprint.data_inicio if sprint else '' }}" required>
+            </div>
+            <div class="form-group mb-0">
+                <label for="f_data_fim">Fim</label>
+                <input type="date" id="f_data_fim" name="data_fim" class="input" 
+                       value="{{ sprint.data_fim if sprint else '' }}" required>
+            </div>
+            <div class="form-group mb-0 flex items-center gap-2 pb-2">
+                <input type="checkbox" id="f_incluir_horas" name="incluir_horas" value="true">
+                <label for="f_incluir_horas" class="mb-0 cursor-pointer">Incluir horas</label>
+            </div>
+            <button type="button" class="btn btn-secondary btn-sm"
+                    hx-post="/htmx/sprint/generate-template"
+                    hx-target="#sprint-dynamic-fields"
+                    hx-include="#f_data_inicio, #f_data_fim, #f_incluir_horas">
+                Gerar Base
+            </button>
+        </div>
+
+        <div id="sprint-dynamic-fields">
+            {% include "partials/sprint_form_fields.html" with context %}
+        </div>
+        
+        <div class="flex justify-end gap-3 pt-4 border-top">
+            <button type="submit" class="btn btn-primary">Salvar Sprint</button>
+        </div>
+    </form>
+</div>

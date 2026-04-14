@@ -8,14 +8,14 @@ templates = Jinja2Templates(directory="app/templates")
 # Páginas avulsas (sem domínio específico)
 # =============================================================================
 
-@router.get("/relatorios")
-def page_relatorios(request: Request):
+@router.get("/sprint")
+def page_sprint(request: Request):
     return templates.TemplateResponse(
         request=request, 
-        name="pages/relatorios.html", 
+        name="pages/sprint.html", 
         context={
-            "title": "Jornada - Relatórios",
-            "page_title": "Relatórios",
-            "active_page": "relatorios"
+            "title": "Jornada - Sprint",
+            "page_title": "Sprint",
+            "active_page": "sprint"
         }
     )

@@ -1,0 +1,38 @@
+<div class="form-group mt-4">
+    <label for="f_nome">Nome da Sprint</label>
+    <input type="text" id="f_nome" name="nome" class="input" 
+           value="{{ nome if nome else (sprint.nome if sprint else '') }}" required
+           placeholder="Ex: Sprint 2024.1">
+</div>
+
+<div class="markdown-editor-grid mt-4">
+    <div class="editor-pane">
+        <label class="text-xs font-semibold uppercase text-muted mb-2 block">Markdown (Edite aqui)</label>
+        <textarea name="conteudo_markdown" class="editor-textarea" 
+                  hx-post="/htmx/sprint/preview"
+                  hx-trigger="keyup changed delay:300ms, load"
+                  hx-target="#markdown-preview">{{ conteudo if conteudo else (sprint.conteudo_markdown if sprint else '') }}</textarea>
+    </div>
+    <div class="preview-pane">
+        <label class="text-xs font-semibold uppercase text-muted mb-2 block">Preview</label>
+        <div id="markdown-preview" class="preview-container">
+            <!-- Renderizado via HTMX -->
+        </div>
+    </div>
+</div>
+
+<div class="mt-4 flex justify-start">
+    <button type="button" class="btn btn-ghost btn-sm" onclick="copyToClipboard()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+        Copiar Markdown
+    </button>
+</div>
+
+<script>
+    function copyToClipboard() {
+        const textarea = document.querySelector('textarea[name="conteudo_markdown"]');
+        textarea.select();
+        document.execCommand('copy');
+        alert('Markdown copiado para a área de transferência!');
+    }
+</script>

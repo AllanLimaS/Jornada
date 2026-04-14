@@ -1,0 +1,36 @@
+<div class="card" id="status-form-container">
+    <div class="card-header">
+        <h3 class="card-title">{% if status_obj %}Editar Status{% else %}Novo Status{% endif %}</h3>
+    </div>
+    
+    <form 
+        {% if status_obj %}
+        hx-patch="/htmx/status-chamado/{{ status_obj.id }}"
+        {% else %}
+        hx-post="/htmx/status-chamado" 
+        {% endif %}
+        hx-target="#status-list" 
+        hx-swap="innerHTML" 
+        class="js-reset-on-success">
+        
+        <div class="form-group">
+            <label class="form-label">Nome do Status</label>
+            <input type="text" name="nome" class="form-control" required placeholder="Ex: Em Aberto, Aguardando..." value="{{ status_obj.nome if status_obj else '' }}">
+        </div>
+        <div class="form-group">
+            <label class="form-label">Cor</label>
+            <input type="color" name="cor" class="form-control" style="height: 45px; padding: 0.25rem;" value="{{ status_obj.cor if status_obj else '#3B82F6' }}">
+        </div>
+        
+        <div class="mt-6">
+            <button type="submit" class="btn btn-primary btn-block">
+                {% if status_obj %}Salvar Alterações{% else %}Salvar Status{% endif %}
+            </button>
+            {% if status_obj %}
+            <button type="button" class="btn btn-ghost btn-block mt-2" hx-get="/htmx/status-chamado/form-new" hx-target="#status-form-container" hx-swap="outerHTML">
+                Cancelar
+            </button>
+            {% endif %}
+        </div>
+    </form>
+</div>

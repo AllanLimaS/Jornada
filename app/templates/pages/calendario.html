@@ -18,11 +18,20 @@
                        class="form-control"
                        style="display:none;" 
                        hx-get="/htmx/atividades/calendario" 
-                       hx-target="#calendario-timeline"
+                       hx-target="#timeline-list"
                        hx-trigger="change">
             </div>
             
             <script>
+                function refreshExpediente(dateStr) {
+                    if (window.htmx) {
+                        htmx.ajax('GET', '/htmx/expediente', {
+                            values: { data_ref: dateStr },
+                            target: '#expediente-container'
+                        });
+                    }
+                }
+
                 // Inicializamos diretamente (com pequeno delay pra garantir renderização)
                 setTimeout(function(){
                     flatpickr("#inline-calendar", {
@@ -34,12 +43,14 @@
                             const input = document.getElementById("inline-calendar");
                             if (input && input.value) {
                                 input.dispatchEvent(new Event('change', { bubbles: true }));
+                                refreshExpediente(input.value);
                             }
                         },
                         onChange: function(selectedDates, dateStr, instance) {
                             const input = document.getElementById("inline-calendar");
                             input.value = dateStr;
                             input.dispatchEvent(new Event('change', { bubbles: true }));
+                            refreshExpediente(dateStr);
                         }
                     });
                 }, 50);
@@ -49,13 +60,20 @@
                 Selecione um dia acima para carregar as atividades daquela data.
             </p>
         </div>
+
+        <!-- Bloco de Expediente (Sincronizado com o calendário) -->
+        <div id="expediente-container" class="mt-4">
+            <div class="card">
+                <p class="text-muted text-center" style="font-size: 0.8rem;">Selecione uma data...</p>
+            </div>
+        </div>
     </div>
 
     <!-- Direita: Timeline do dia selecionado -->
     <div>
         <div class="card">
             <h3 class="card-title mb-4">Linha do Tempo</h3>
-            <div id="calendario-timeline">
+            <div id="timeline-list">
                 <div class="empty-state">
                     Lembre-se de conectar a lógica do backend após as atualizações.
                 </div>

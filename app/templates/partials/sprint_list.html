@@ -1,0 +1,39 @@
+{% if message %}
+<div class="alert alert-success mb-6" hx-trigger="load delay:3s" hx-swap="outerHTML" hx-target="this" style="background: rgba(16, 185, 129, 0.1); color: #10b981; padding: 1rem; border-radius: var(--radius-md);">
+    {{ message }}
+</div>
+{% endif %}
+
+<div class="sprint-grid">
+    {% for sprint in sprints %}
+    <div class="sprint-card" 
+         hx-get="/htmx/sprint/edit/{{ sprint.id }}" 
+         hx-target="#sprint-page-content"
+         hx-swap="innerHTML">
+        <div class="sprint-card-header">
+            <h3 class="sprint-card-title">{{ sprint.nome }}</h3>
+            <p class="sprint-card-date">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1" style="display:inline; vertical-align:text-bottom;"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                {{ sprint.data_inicio.strftime('%d/%m/%Y') }} - {{ sprint.data_fim.strftime('%d/%m/%Y') }}
+            </p>
+        </div>
+        <div class="sprint-card-footer">
+            <span class="text-xs text-muted">Criado em {{ sprint.created_at.strftime('%d/%m/%Y') }}</span>
+            <button class="btn btn-ghost btn-sm text-danger" 
+                    hx-delete="/htmx/sprint/delete/{{ sprint.id }}"
+                    hx-confirm="Tem certeza que deseja excluir esta sprint?"
+                    hx-target="#sprint-list-container"
+                    onclick="event.stopPropagation()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </button>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-span-full">
+        <div class="empty-state">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mb-4 text-muted"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/></svg>
+            <p>Nenhuma sprint encontrada. Comece criando uma nova!</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>

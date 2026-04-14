@@ -89,15 +89,34 @@ def _build_chamados_map(session: Session, atividades):
 def _render_timeline(request: Request, session: Session, data_ref: date_type):
     """Helper: renderiza a timeline de atividades de uma data específica."""
     atividades = atividade_service.get_atividades_by_date(session, data_ref)
+    atividades.sort(key=lambda x: x.hora_inicio)
     total_minutos = sum(atv.duracao_minutos for atv in atividades)
     horas = total_minutos // 60
     minutos = total_minutos % 60
     chamados_map = _build_chamados_map(session, atividades)
+    is_today = (data_ref == date_type.today())
     
+    # Cálculo de horário dinâmico para a agenda (Mínimo 08h e Máximo 18h)
+    min_h = 8
+    max_h = 18
+    for atv in atividades:
+        if atv.hora_inicio.hour < min_h:
+            min_h = atv.hora_inicio.hour
+        if atv.hora_fim.hour >= max_h:
+            max_h = atv.hora_fim.hour + 1
+            
     return templates.TemplateResponse(
         request=request,
         name="partials/timeline_list.html",
-        context={"atividades": atividades, "total_horas": horas, "total_minutos": minutos, "chamados_map": chamados_map}
+        context={
+            "atividades": atividades, 
+            "total_horas": horas, 
+            "total_minutos": minutos, 
+            "chamados_map": chamados_map,
+            "is_today": is_today,
+            "min_h": min_h,
+            "max_h": max_h
+        }
     )
 
 @router.get("/htmx/atividades/calendario")
@@ -112,12 +131,12 @@ def htmx_form_new_atividade(request: Request):
     )
 
 @router.get("/htmx/atividades/{id}/form-edit")
-def htmx_form_edit_atividade(request: Request, id: int, context: str = "hoje", session: Session = Depends(get_session)):
+def htmx_form_edit_atividade(request: Request, id: int, edit_context: str = "hoje", session: Session = Depends(get_session)):
     atividade = session.get(models.Atividade, id)
     chamados_map = _build_chamados_map(session, [atividade]) if atividade else {}
     return templates.TemplateResponse(
         "partials/atividade_form.html",
-        {"request": request, "atividade": atividade, "chamados_map": chamados_map, "edit_context": context}
+        {"request": request, "atividade": atividade, "chamados_map": chamados_map, "edit_context": edit_context}
     )
 
 @router.get("/htmx/atividades/timeline")
@@ -140,16 +159,23 @@ async def htmx_create_atividade(
         try: c_id = int(chamado_id)
         except ValueError: pass
 
-    atividade_in = schemas.AtividadeCreate(
-        data_referencia=data_referencia,
-        hora_inicio=hora_inicio,
-        hora_fim=hora_fim,
-        descricao=descricao,
-        portal_status=models.AtividadePortalStatus(portal_status),
-        chamado_id=c_id
-    )
-    atividade_service.create_atividade(session, atividade_in)
-    return _render_timeline(request, session, data_referencia)
+    try:
+        atividade_in = schemas.AtividadeCreate(
+            data_referencia=data_referencia,
+            hora_inicio=hora_inicio,
+            hora_fim=hora_fim,
+            descricao=descricao,
+            portal_status=models.AtividadePortalStatus(portal_status),
+            chamado_id=c_id
+        )
+        atividade_service.create_atividade(session, atividade_in)
+    except HTTPException as e:
+        from fastapi.responses import PlainTextResponse
+        return PlainTextResponse(str(e.detail), status_code=400)
+
+    response = _render_timeline(request, session, data_referencia)
+    response.headers["HX-Trigger"] = "closeModal"
+    return response
 
 @router.patch("/htmx/atividades/{atividade_id}")
 async def htmx_edit_atividade(
@@ -169,20 +195,28 @@ async def htmx_edit_atividade(
         try: c_id = int(chamado_id)
         except ValueError: pass
 
-    update_data = schemas.AtividadeUpdate(
-        data_referencia=data_referencia,
-        hora_inicio=hora_inicio,
-        hora_fim=hora_fim,
-        descricao=descricao,
-        portal_status=models.AtividadePortalStatus(portal_status),
-        chamado_id=c_id
-    )
-    atividade_service.update_atividade(session, atividade_id, update_data)
+    try:
+        update_data = schemas.AtividadeUpdate(
+            data_referencia=data_referencia,
+            hora_inicio=hora_inicio,
+            hora_fim=hora_fim,
+            descricao=descricao,
+            portal_status=models.AtividadePortalStatus(portal_status),
+            chamado_id=c_id
+        )
+        atividade_service.update_atividade(session, atividade_id, update_data)
+    except HTTPException as e:
+        from fastapi.responses import PlainTextResponse
+        return PlainTextResponse(str(e.detail), status_code=400)
     
     # Retorna o conteúdo correto dependendo do contexto da edição
     if edit_context == "atividades":
-        return htmx_atividades_lista_content(request, "todos", session)
-    return _render_timeline(request, session, data_referencia)
+        response = htmx_atividades_lista_content(request, "todos", session)
+    else:
+        response = _render_timeline(request, session, data_referencia)
+    
+    response.headers["HX-Trigger"] = "closeModal"
+    return response
 
 @router.delete("/htmx/atividades/{atividade_id}")
 def htmx_delete_atividade(request: Request, atividade_id: int, session: Session = Depends(get_session)):

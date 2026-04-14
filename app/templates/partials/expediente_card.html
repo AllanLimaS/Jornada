@@ -1,0 +1,63 @@
+<div class="card">
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="card-title" style="margin-bottom: 0; font-size: 0.9rem;">Expediente</h3>
+        <span class="text-muted" style="font-size: 0.7rem;">Meta: 08:00h</span>
+    </div>
+
+    <form hx-post="/htmx/expediente/update" hx-trigger="change" hx-target="#expediente-container" hx-swap="innerHTML">
+        <input type="hidden" name="data_ref" value="{{ exp.data.strftime('%Y-%m-%d') }}">
+        <div class="form-group" style="margin-bottom: 0.75rem;">
+            <div class="row" style="gap: 0.4rem;">
+                <div>
+                    <label class="form-label" style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted);">Entrada</label>
+                    <input type="text" name="entrada_1" class="form-control js-time-mask" style="padding: 0.4rem; text-align: center;"
+                           value="{{ exp.entrada_1.strftime('%H:%M') if exp.entrada_1 else '' }}" 
+                           placeholder="00:00" maxlength="5">
+                </div>
+                <div>
+                    <label class="form-label" style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted);">Almoço</label>
+                    <input type="text" name="saida_1" class="form-control js-time-mask" style="padding: 0.4rem; text-align: center;"
+                           value="{{ exp.saida_1.strftime('%H:%M') if exp.saida_1 else '' }}" 
+                           placeholder="00:00" maxlength="5">
+                </div>
+                <div>
+                    <label class="form-label" style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted);">Retorno</label>
+                    <input type="text" name="entrada_2" class="form-control js-time-mask" style="padding: 0.4rem; text-align: center;"
+                           value="{{ exp.entrada_2.strftime('%H:%M') if exp.entrada_2 else '' }}" 
+                           placeholder="00:00" maxlength="5">
+                </div>
+                <div>
+                    <label class="form-label" style="font-size: 0.65rem; text-transform: uppercase; color: var(--text-muted);">Saída</label>
+                    <input type="text" name="saida_2" class="form-control js-time-mask" style="padding: 0.4rem; text-align: center;"
+                           value="{{ exp.saida_2.strftime('%H:%M') if exp.saida_2 else '' }}" 
+                           placeholder="00:00" maxlength="5">
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <div class="jornada-result" style="margin-top: 1rem; padding: 0.75rem; background-color: var(--bg-surface-hover); border-radius: 4px;">
+        {% if stats.is_complete_morning and stats.target_exit_str %}
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-muted" style="font-size: 0.7rem; margin-bottom: 2px;">Saída recomendada:</p>
+                    <div style="font-size: 1.25rem; font-weight: 700; color: var(--accent-color);">
+                        {{ stats.target_exit_str }}
+                    </div>
+                </div>
+                <div style="text-align: right;">
+                    <p class="text-muted" style="font-size: 0.7rem; margin-bottom: 2px;">Janela:</p>
+                    <div style="font-size: 0.8rem; font-weight: 500;">
+                        {{ stats.window_start }} — {{ stats.window_end }}
+                    </div>
+                </div>
+            </div>
+        {% else %}
+            <div class="text-center">
+                <p class="text-muted" style="font-size: 0.75rem;">
+                    Projeção indisponível (manhã incompleta)
+                </p>
+            </div>
+        {% endif %}
+    </div>
+</div>

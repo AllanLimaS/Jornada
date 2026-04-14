@@ -18,3 +18,17 @@ def delete_status(session: Session, status_id: int):
     if status:
         session.delete(status)
         session.commit()
+
+def update_status(session: Session, status_id: int, status_in: schemas.ChamadoStatusUpdate) -> models.ChamadoStatus:
+    db_status = session.get(models.ChamadoStatus, status_id)
+    if not db_status:
+        return None
+    
+    status_data = status_in.model_dump(exclude_unset=True)
+    for key, value in status_data.items():
+        setattr(db_status, key, value)
+    
+    session.add(db_status)
+    session.commit()
+    session.refresh(db_status)
+    return db_status

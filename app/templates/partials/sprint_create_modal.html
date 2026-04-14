@@ -1,0 +1,37 @@
+<div class="px-2">
+    <p class="text-sm text-muted mb-6">Defina o período para gerar o relatório automático de atividades.</p>
+
+    <form hx-post="/htmx/sprint/generate" 
+          hx-target="#sprint-page-content" 
+          hx-swap="innerHTML"
+          onsubmit="document.getElementById('global-modal').classList.remove('active')"
+          class="space-y-4">
+        
+        <div class="form-group row">
+            <div>
+                <label class="form-label">Data de Início</label>
+                <input type="text" name="data_inicio" class="form-control js-datepicker" 
+                       value="{{ hoje_date }}" required autocomplete="off">
+            </div>
+            <div>
+                <label class="form-label">Data de Fim</label>
+                <input type="text" name="data_fim" class="form-control js-datepicker" 
+                       value="{{ hoje_date }}" required autocomplete="off">
+            </div>
+        </div>
+
+        <div class="form-group flex items-center gap-4 py-2">
+            <input type="checkbox" id="m_incluir_horas" name="incluir_horas" value="true" class="form-checkbox">
+            <label for="m_incluir_horas" class="form-label mb-0 cursor-pointer" style="margin-top: 0">Incluir horas trabalhadas no relatório</label>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-6 border-top">
+            <button type="button" class="btn btn-ghost" onclick="document.getElementById('global-modal').classList.remove('active')">
+                Cancelar
+            </button>
+            <button type="submit" class="btn btn-primary">
+                Gerar Sprint
+            </button>
+        </div>
+    </form>
+</div>

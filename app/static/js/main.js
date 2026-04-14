@@ -123,12 +123,161 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initial auto-expand on page load
   document.querySelectorAll('textarea.form-control').forEach(autoExpandTextarea);
 
-  // Auto-expand on HTMX swap
+  // Inicializar datepickers no formulário (Flatpickr)
+  const initFormDatepickers = (container = document) => {
+    container.querySelectorAll('.js-datepicker').forEach(el => {
+      flatpickr(el, {
+        dateFormat: "Y-m-d",
+        altInput: true,
+        altFormat: "d/m/Y",
+        locale: "pt",
+        allowInput: true
+      });
+    });
+  };
+
+  // Inicializa na carga da página
+  initFormDatepickers();
+
+  // Auto-expand on HTMX swap e inicialização de componentes
   document.body.addEventListener('htmx:afterSwap', function(evt) {
-    const textareas = evt.detail.target.querySelectorAll('textarea.form-control');
+    const target = evt.detail.target;
+    
+    // Auto-ajuste de textarea (no elemento ou em seus filhos)
+    const textareas = target.querySelectorAll('textarea.form-control');
     textareas.forEach(autoExpandTextarea);
+    if (target.tagName === 'TEXTAREA' && target.classList.contains('form-control')) {
+      autoExpandTextarea(target);
+    }
+
+    initFormDatepickers(target);
+
+    // Global Modal: Auto-open and focus
+    if (target.id === 'global-modal-body') {
+      const modal = document.getElementById('global-modal');
+      if (modal) {
+        modal.classList.add('active');
+        // Prioriza focar na Hora de Início, senão pega o primeiro campo disponível
+        let firstInput = target.querySelector('input[name="hora_inicio"]');
+        if (!firstInput) {
+          firstInput = target.querySelector('input:not([type="hidden"]), textarea, select');
+        }
+        
+        if (firstInput) {
+          setTimeout(() => firstInput.focus(), 150);
+        }
+      }
+    }
+  });
+
+  // Mascara de Horário Restritiva (HH:MM)
+  document.addEventListener('input', function(e) {
+    if (e.target.classList.contains('js-time-mask')) {
+      let v = e.target.value.replace(/\D/g, '').substring(0, 4);
+      
+      // Validação básica de horas (00-23)
+      if (v.length >= 1 && parseInt(v[0]) > 2) v = '';
+      if (v.length >= 2 && parseInt(v.substring(0, 2)) > 23) v = v[0];
+      
+      // Validação básica de minutos (00-59)
+      if (v.length >= 3 && parseInt(v[2]) > 5) v = v.substring(0, 2);
+      
+      if (v.length >= 3) {
+        v = v.substring(0, 2) + ':' + v.substring(2);
+      }
+      e.target.value = v;
+    }
+  });
+
+  // HTMX Helper: Handle 400 and 422 errors globally
+  document.body.addEventListener('htmx:beforeOnLoad', function (evt) {
+    const status = evt.detail.xhr.status;
+    if (status === 400 || status === 422) {
+      const errorDiv = document.getElementById('form-error');
+      if (errorDiv) {
+        if (status === 422) {
+          errorDiv.innerText = "Dados inválidos: verifique os formatos de hora (00:00 - 23:59).";
+        } else {
+          errorDiv.innerText = evt.detail.xhr.responseText;
+        }
+        errorDiv.style.display = 'block';
+        
+        // Reset loading button if needed
+        const submitBtn = document.querySelector('form button[type="submit"]');
+        if (submitBtn) submitBtn.classList.remove('htmx-request');
+      }
+    }
+  }, true);
+
+  // Listener para fechar o modal via trigger do servidor (HX-Trigger: closeModal)
+  document.body.addEventListener('closeModal', function() {
+    const modal = document.getElementById('global-modal');
+    if (modal) modal.classList.remove('active');
+  });
+
+  // HTMX Helper: Handle 400 errors globally
+  document.body.addEventListener('htmx:beforeOnLoad', function (evt) {
+    if (evt.detail.xhr.status === 400) {
+      const errorDiv = document.getElementById('form-error');
+      if (errorDiv) {
+        errorDiv.innerText = evt.detail.xhr.responseText;
+        errorDiv.style.display = 'block';
+      }
+    }
+  });
+
+  // Global Keydown: Focus Trap for active modals
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Tab') {
+      // Busca todos os overlays que estão ativos/visíveis
+      const overlays = Array.from(document.querySelectorAll('.modal-overlay.active, .chamado-picker-overlay')).filter(el => {
+        return el.classList.contains('active') || el.style.display === 'flex' || el.style.display === 'block';
+      });
+      
+      // Pega o último da lista (o mais profundo no DOM, que geralmente está "por cima")
+      const activeModal = overlays.pop();
+      
+      if (activeModal) {
+        trapFocus(e, activeModal);
+      }
+    }
+    
+    if (e.key === 'Escape') {
+      // Fechar modal global também com Escape
+      const globalModal = document.getElementById('global-modal');
+      if (globalModal && globalModal.classList.contains('active')) {
+        globalModal.classList.remove('active');
+      }
+      closeChamadoPicker();
+    }
   });
 });
+
+// Helper para travar o foco (Focus Trap)
+function trapFocus(e, container) {
+  const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+  // Filtramos apenas os elementos que estão visíveis na tela
+  const focusableElements = Array.from(container.querySelectorAll(focusableSelectors)).filter(el => {
+    return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+  });
+  
+  const firstFocusableElement = focusableElements[0];
+  const lastFocusableElement = focusableElements[focusableElements.length - 1];
+
+  if (!firstFocusableElement) return;
+
+  if (e.shiftKey) { // Shift + Tab
+    if (document.activeElement === firstFocusableElement) {
+      lastFocusableElement.focus();
+      e.preventDefault();
+    }
+  } else { // Tab
+    if (document.activeElement === lastFocusableElement) {
+      firstFocusableElement.focus();
+      e.preventDefault();
+    }
+  }
+}
 
 // Helper para auto-expandir textarea
 function autoExpandTextarea(textarea) {

@@ -1,41 +1,75 @@
 {% if atividades %}
-<div class="timeline" id="timeline-container">
+<div class="timeline-view">
+    {% set ns = namespace(prev_end=None) %}
     {% for atv in atividades %}
-    <!-- Envolve o item para ser clicável usando HTMX para recarregar o form -->
-    <div class="timeline-item" style="cursor: pointer;" hx-get="/htmx/atividades/{{ atv.id }}/form-edit" hx-target="#atividade-form-container" hx-swap="outerHTML">
-        <div class="timeline-time">{{ atv.hora_inicio.strftime('%H:%M') }} - {{ atv.hora_fim.strftime('%H:%M') }}</div>
-        <div class="timeline-content">
-            <div class="timeline-desc">{{ atv.descricao }}</div>
-            <div class="timeline-meta">
-                {% if atv.chamado_id %}
-                {% set ch = chamados_map.get(atv.chamado_id) if chamados_map else None %}
-                <span class="badge badge-chamado">{{ ch.titulo if ch else ('Chamado #' ~ atv.chamado_id) }}</span>
-                {% else %}
-                <span class="badge badge-outline">S/ Chamado</span>
-                {% endif %}
-                
-                <span>|</span>
-                <span class="badge badge-status status-{{ atv.portal_status.value }}">{{ atv.portal_status.value }}</span>
+        
+        {# Detecção de Intervalo (Gap) #}
+        {% if ns.prev_end %}
+            {% set current_start_mins = atv.hora_inicio.hour * 60 + atv.hora_inicio.minute %}
+            {% set prev_end_mins = ns.prev_end.hour * 60 + ns.prev_end.minute %}
+            {% set gap_mins = current_start_mins - prev_end_mins %}
+            
+            {% if gap_mins > 5 %}
+                <div class="timeline-gap">
+                    {% if gap_mins >= 60 %}
+                        {{ (gap_mins / 60) | int }}h {{ gap_mins % 60 }}m de intervalo
+                    {% else %}
+                        {{ gap_mins }} min de intervalo
+                    {% endif %}
+                </div>
+            {% endif %}
+        {% endif %}
+
+        <div class="timeline-slot">
+            <div class="timeline-time-label">
+                {{ atv.hora_inicio.strftime('%H:%M') }}
+            </div>
+            
+            <div class="timeline-card-container">
+                <div class="timeline-card status-{{ atv.portal_status.value }}" 
+                     hx-get="/htmx/atividades/{{ atv.id }}/form-edit" 
+                     hx-target="#global-modal-body">
+                    
+                    <div class="timeline-card-header">
+                        <div class="timeline-card-title">{{ atv.descricao }}</div>
+                        <div class="timeline-card-actions">
+                            <button class="btn btn-ghost" style="padding:4px;" 
+                                    hx-delete="/htmx/atividades/{{ atv.id }}" 
+                                    hx-target="#timeline-list" 
+                                    hx-confirm="Tem certeza que deseja apagar?" 
+                                    onclick="event.stopPropagation()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-card-meta">
+                        <span class="timeline-status-dot"></span>
+                        <span>{{ atv.hora_inicio.strftime('%H:%M') }} - {{ atv.hora_fim.strftime('%H:%M') }}</span>
+                        {% if atv.chamado_id %}
+                            {% set ch = chamados_map.get(atv.chamado_id) if chamados_map else None %}
+                            <span>•</span>
+                            <span class="badge badge-chamado" style="font-size: 0.65rem;">{{ ch.titulo if ch else ('#' ~ atv.chamado_id) }}</span>
+                        {% endif %}
+                        <span>•</span>
+                        <span style="text-transform: capitalize;">{{ atv.portal_status.value }}</span>
+                    </div>
+                </div>
             </div>
         </div>
-        <!-- Botão de deletar opcional via HTMX com stop propagation -->
-        <div>
-            <button class="btn btn-ghost" style="padding:0.25rem" hx-delete="/htmx/atividades/{{ atv.id }}" hx-target="#timeline-list" hx-confirm="Tem certeza que deseja apagar?" onclick="event.stopPropagation()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
-            </button>
-        </div>
-    </div>
+        
+        {% set ns.prev_end = atv.hora_fim %}
     {% endfor %}
 </div>
 
-<!-- Usando OOB swap para atualizar o total de horas no painel -->
 <div hx-swap-oob="innerHTML:#total-horas-dia">
     {{ total_horas }}h {{ total_minutos }}m
 </div>
 
 {% else %}
-<div class="empty-state">
-    Nenhuma atividade registrada para hoje.
+<div class="timeline-empty">
+    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem; opacity: 0.5;"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
+    <p>Nenhuma atividade registrada para hoje.</p>
 </div>
 <div hx-swap-oob="innerHTML:#total-horas-dia">0h 0m</div>
 {% endif %}

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="mb-6 flex justify-between items-center">
+    <div>
+        <h2 class="text-xl font-semibold">Suas Sprints</h2>
+        <p class="text-sm text-muted mt-2">Histórico de relatórios e resumos de trabalho.</p>
+    </div>
+    <button class="btn btn-primary" 
+            hx-get="/htmx/sprint/new" 
+            hx-target="#global-modal-body"
+            onclick="document.getElementById('global-modal').classList.add('active')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-2"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        Nova Sprint
+    </button>
+</div>
+
+<div id="sprint-page-content">
+    <div id="sprint-list-container" hx-get="/htmx/sprint/list" hx-trigger="load">
+        <div class="text-center p-8">
+            <div class="spinner-sm mx-auto mb-4"></div>
+            <p class="text-muted">Carregando suas sprints...</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .sprint-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+    .sprint-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+        transition: all 0.2s;
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
+        position: relative;
+    }
+    .sprint-card:hover {
+        border-color: var(--accent-color);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    .sprint-card-header {
+        margin-bottom: 1rem;
+    }
+    .sprint-card-title {
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--text-color);
+        margin-bottom: 0.25rem;
+    }
+    .sprint-card-date {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+    .sprint-card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--border-color);
+    }
+</style>
+{% endblock %}

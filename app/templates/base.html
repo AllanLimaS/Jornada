@@ -12,6 +12,7 @@
     
     <!-- Frontend Assets -->
     <link rel="stylesheet" href="/static/css/style.css?v=5">
+    <link rel="stylesheet" href="/static/css/timeline.css">
     
     <!-- HTMX -->
     <script src="https://unpkg.com/htmx.org@1.9.11"></script>
@@ -24,6 +25,10 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://npmcdn.com/flatpickr/dist/l10n/pt.js"></script>
     
+    <!-- Vditor (Typora/Notion Style Markdown Editor) -->
+    <link rel="stylesheet" href="https://unpkg.com/vditor/dist/index.css" />
+    <script src="https://unpkg.com/vditor/dist/index.min.js"></script>
+
     <!-- Lógica UI Simples -->
     <script src="/static/js/main.js"></script>
 </head>
@@ -48,6 +53,20 @@
         </main>
         
     </div>
+
+    <!-- Modal Genérico -->
+    <div class="modal-overlay" id="global-modal" onclick="if(event.target === this) this.classList.remove('active')">
+        <div class="modal-dialog" id="global-modal-dialog">
+            <div class="modal-header">
+                <h3 class="modal-title" id="global-modal-title">Detalhes</h3>
+                <button type="button" class="btn btn-ghost" onclick="document.getElementById('global-modal').classList.remove('active')">✕</button>
+            </div>
+            <div class="modal-body" id="global-modal-body">
+                <!-- Conteúdo carregado via HTMX -->
+            </div>
+        </div>
+    </div>
+
 
 </body>
 </html>

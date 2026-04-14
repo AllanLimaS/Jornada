@@ -3,9 +3,27 @@
 {% block content %}
 <div class="grid-2-cols">
     
-    <!-- Esquerda: Formulário de Nova Atividade -->
-    <div>
-        {% include "partials/atividade_form.html" %}
+    <!-- Esquerda: Dashboard (Expediente e Ações) -->
+    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+        
+        <!-- Bloco de Ação Rápida -->
+        <div class="card" style="text-align: center; padding: 1.5rem;">
+            <button class="btn btn-primary btn-block" 
+                    hx-get="/htmx/atividades/form-new" 
+                    hx-target="#global-modal-body"
+                    style="height: 50px; font-size: 1.1rem; gap: 0.75rem;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                Nova Atividade
+            </button>
+        </div>
+
+        <!-- Bloco de Expediente -->
+        <div id="expediente-container" hx-get="/htmx/expediente" hx-trigger="load">
+            <div class="card">
+                <p class="text-muted text-center">Carregando horários...</p>
+            </div>
+        </div>
+
     </div>
 
     <!-- Direita: Timeline do Dia -->
