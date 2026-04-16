@@ -21,7 +21,7 @@ def htmx_get_expediente(
         data_ref = date_type.today()
     
     exp = expediente_service.get_or_create_expediente(session, data_ref)
-    stats = expediente_service.calculate_stats(exp)
+    stats = expediente_service.calculate_stats(session, exp)
     return templates.TemplateResponse(
         "partials/expediente_card.html",
         {"request": request, "exp": exp, "stats": stats}
@@ -52,7 +52,7 @@ def htmx_update_expediente(
     )
     
     exp = expediente_service.update_expediente(session, data_ref, data_update)
-    stats = expediente_service.calculate_stats(exp)
+    stats = expediente_service.calculate_stats(session, exp)
     
     return templates.TemplateResponse(
         "partials/expediente_card.html",

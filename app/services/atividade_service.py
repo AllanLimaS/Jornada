@@ -5,6 +5,8 @@ from app.models import Atividade
 from app.schemas import AtividadeCreate, AtividadeUpdate
 
 def calculate_duration(hora_inicio, hora_fim) -> int:
+    if not hora_inicio or not hora_fim:
+        return 0
     dt1 = datetime.combine(datetime.today(), hora_inicio)
     dt2 = datetime.combine(datetime.today(), hora_fim)
     if dt2 < dt1:
@@ -44,7 +46,10 @@ def update_atividade(session: Session, atividade_id: int, atividade_in: Atividad
         
     if "hora_inicio" in atividade_data or "hora_fim" in atividade_data:
         try:
-            duracao = calculate_duration(db_atividade.hora_inicio, db_atividade.hora_fim)
+            # Pega valores atuais do BD caso um deles não tenha sido enviado no PATCH
+            h_ini = db_atividade.hora_inicio
+            h_fim = db_atividade.hora_fim
+            duracao = calculate_duration(h_ini, h_fim)
             db_atividade.duracao_minutos = duracao
         except ValueError as e:
             raise HTTPException(status_code=400, detail=str(e))

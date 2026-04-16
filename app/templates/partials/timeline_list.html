@@ -1,10 +1,11 @@
+{% from "macros/chamado_badge.html" import chamado_badge %}
 {% if atividades %}
 <div class="timeline-view">
     {% set ns = namespace(prev_end=None) %}
     {% for atv in atividades %}
         
         {# Detecção de Intervalo (Gap) #}
-        {% if ns.prev_end %}
+        {% if ns.prev_end and atv.hora_inicio %}
             {% set current_start_mins = atv.hora_inicio.hour * 60 + atv.hora_inicio.minute %}
             {% set prev_end_mins = ns.prev_end.hour * 60 + ns.prev_end.minute %}
             {% set gap_mins = current_start_mins - prev_end_mins %}
@@ -22,16 +23,17 @@
 
         <div class="timeline-slot">
             <div class="timeline-time-label">
-                {{ atv.hora_inicio.strftime('%H:%M') }}
+                {{ atv.hora_inicio.strftime('%H:%M') if atv.hora_inicio else '--:--' }}
             </div>
             
             <div class="timeline-card-container">
                 <div class="timeline-card status-{{ atv.portal_status.value }}" 
                      hx-get="/htmx/atividades/{{ atv.id }}/form-edit" 
-                     hx-target="#global-modal-body">
+                     hx-target="#global-modal-body"
+                     hx-on::after-request="document.getElementById('global-modal-dialog').classList.add('modal-lg'); document.getElementById('global-modal').classList.add('active');">
                     
                     <div class="timeline-card-header">
-                        <div class="timeline-card-title">{{ atv.descricao }}</div>
+                        <div class="timeline-card-desc">{{ atv.descricao }}</div>
                         <div class="timeline-card-actions">
                             <button class="btn btn-ghost" style="padding:4px;" 
                                     hx-delete="/htmx/atividades/{{ atv.id }}" 
@@ -45,11 +47,11 @@
                     
                     <div class="timeline-card-meta">
                         <span class="timeline-status-dot"></span>
-                        <span>{{ atv.hora_inicio.strftime('%H:%M') }} - {{ atv.hora_fim.strftime('%H:%M') }}</span>
+                        <span>{{ atv.hora_inicio.strftime('%H:%M') if atv.hora_inicio else '--:--' }} - {{ atv.hora_fim.strftime('%H:%M') if atv.hora_fim else '--:--' }}</span>
                         {% if atv.chamado_id %}
                             {% set ch = chamados_map.get(atv.chamado_id) if chamados_map else None %}
                             <span>•</span>
-                            <span class="badge badge-chamado" style="font-size: 0.65rem;">{{ ch.titulo if ch else ('#' ~ atv.chamado_id) }}</span>
+                            {{ chamado_badge(atv.chamado) }}
                         {% endif %}
                         <span>•</span>
                         <span style="text-transform: capitalize;">{{ atv.portal_status.value }}</span>

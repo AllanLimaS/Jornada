@@ -19,6 +19,8 @@
             {% endif %}
             hx-target="#chamados-list" 
             hx-swap="outerHTML" 
+            class="js-chamado-form"
+            data-chamado-id="{{ chamado.id if chamado else 'novo' }}"
             onsubmit="document.getElementById('{% if chamado %}edit-chamado-modal{% else %}new-chamado-modal{% endif %}').classList.remove('active')">
             
             <div class="form-group row">
@@ -55,11 +57,14 @@
                 <textarea name="descricao" class="form-control" placeholder="Informações detalhadas..." tabindex="5" rows="1">{{ chamado.descricao if chamado else '' }}</textarea>
             </div>
             
-            <div class="mt-6" style="display: flex; justify-content: flex-end; gap: 0.5rem;">
-                <button type="button" class="btn btn-ghost" onclick="document.getElementById('{% if chamado %}edit-chamado-modal{% else %}new-chamado-modal{% endif %}').classList.remove('active')" tabindex="7">Cancelar</button>
-                <button type="submit" class="btn btn-primary" tabindex="6">
-                    {% if chamado %}Salvar Alterações{% else %}Criar Chamado{% endif %}
-                </button>
+            <div class="mt-6" style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.25rem;">
+                <div style="display: flex; gap: 0.5rem;">
+                    <button type="button" class="btn btn-ghost" onclick="document.getElementById('{% if chamado %}edit-chamado-modal{% else %}new-chamado-modal{% endif %}').classList.remove('active')" tabindex="7">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" tabindex="6">
+                        {% if chamado %}Salvar Alterações{% else %}Criar Chamado{% endif %}
+                    </button>
+                </div>
+                <div class="js-draft-indicator" style="font-size: 0.75rem; color: var(--text-muted); opacity: 0; transition: opacity 0.3s;"></div>
             </div>
         </form>
     </div>

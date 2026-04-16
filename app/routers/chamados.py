@@ -58,29 +58,49 @@ def api_delete_chamado(chamado_id: int, session: Session = Depends(get_session))
 # HTMX — /htmx/chamados
 # =============================================================================
 
-def _render_chamados_list(request: Request, session: Session, query: Optional[str] = None):
-    """Helper: renderiza a lista de chamados, com busca opcional."""
-    chamados = chamado_service.get_chamados_with_ultima_atv(session, query=query)
-    categorias_map = {c.id: c for c in chamado_categoria_service.get_categorias(session)}
-    statuses_map = {s.id: s for s in chamado_status_service.get_statuses(session)}
+def _render_chamados_list(
+    request: Request, 
+    session: Session, 
+    query: Optional[str] = None,
+    categoria_id: Optional[int] = None,
+    status_id: Optional[int] = None
+):
+    """Helper: renderiza a lista de chamados, com filtros opcionais."""
+    chamados = chamado_service.get_chamados_with_ultima_atv(
+        session, query=query, categoria_id=categoria_id, status_id=status_id
+    )
     
     return templates.TemplateResponse(
         request=request, 
         name="partials/chamados_list.html", 
         context={
-            "chamados": chamados,
-            "categorias_map": categorias_map,
-            "statuses_map": statuses_map
+            "chamados": chamados
         }
     )
 
 @router.get("/htmx/chamados/list")
-def htmx_list_chamados(request: Request, session: Session = Depends(get_session)):
-    return _render_chamados_list(request, session)
+def htmx_list_chamados(
+    request: Request, 
+    q: Optional[str] = None,
+    categoria_id: Optional[str] = None,
+    status_id: Optional[str] = None,
+    session: Session = Depends(get_session)
+):
+    c_id = int(categoria_id) if categoria_id and categoria_id.isdigit() else None
+    s_id = int(status_id) if status_id and status_id.isdigit() else None
+    return _render_chamados_list(request, session, query=q, categoria_id=c_id, status_id=s_id)
 
 @router.get("/htmx/chamados/search")
-def htmx_search_chamados(request: Request, q: str = "", session: Session = Depends(get_session)):
-    return _render_chamados_list(request, session, query=q)
+def htmx_search_chamados(
+    request: Request, 
+    q: str = "", 
+    categoria_id: Optional[str] = None, 
+    status_id: Optional[str] = None,
+    session: Session = Depends(get_session)
+):
+    c_id = int(categoria_id) if categoria_id and categoria_id.isdigit() else None
+    s_id = int(status_id) if status_id and status_id.isdigit() else None
+    return _render_chamados_list(request, session, query=q, categoria_id=c_id, status_id=s_id)
 
 @router.post("/htmx/chamados")
 async def htmx_create_chamado(

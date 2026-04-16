@@ -1,7 +1,10 @@
 <div class="card">
     <div class="flex items-center justify-between mb-4">
         <h3 class="card-title" style="margin-bottom: 0; font-size: 0.9rem;">Expediente</h3>
-        <span class="text-muted" style="font-size: 0.7rem;">Meta: 08:00h</span>
+        <div class="flex items-center gap-2">
+            <div id="expediente-save-feedback" class="expediente-saved-msg">Salvo ✓</div>
+            <span class="text-muted" style="font-size: 0.7rem;">Meta: {{ stats.meta_str }}</span>
+        </div>
     </div>
 
     <form hx-post="/htmx/expediente/update" hx-trigger="change" hx-target="#expediente-container" hx-swap="innerHTML">

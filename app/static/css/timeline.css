@@ -54,9 +54,8 @@
 .timeline-card {
     background-color: var(--bg-surface);
     border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 1rem;
-    box-shadow: var(--shadow-sm);
+    border-radius: 8px;
+    padding: 0.6rem 0.875rem;
     transition: var(--transition);
     cursor: pointer;
     position: relative;
@@ -64,8 +63,7 @@
 
 .timeline-card:hover {
     border-color: var(--border-color-strong);
-    box-shadow: var(--shadow);
-    transform: translateY(-2px);
+    background-color: var(--bg-surface-hover);
 }
 
 .timeline-card-header {
@@ -138,4 +136,72 @@
     color: var(--text-muted);
     border: 1px dashed var(--border-color);
     border-radius: var(--radius);
+}
+
+/* --- Task Improvements --- */
+
+/* Custom Grid for Activity Form (Modal) */
+.grid-form-2-cols {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 1.5rem;
+    align-items: stretch;
+}
+
+@media (max-width: 640px) {
+    .grid-form-2-cols {
+        grid-template-columns: 1fr;
+    }
+}
+
+.grid-form-left {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.grid-form-right {
+    display: flex;
+    flex-direction: column;
+}
+
+.grid-form-right .form-group {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0;
+}
+
+.grid-form-right textarea {
+    flex-grow: 1;
+    height: 100% !important;
+}
+
+/* Compact Timeline Card & Hover Description */
+.timeline-card-desc {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.25s ease, opacity 0.2s ease;
+    font-size: 0.875rem;
+    color: var(--text-main);
+    margin-top: 0.5rem;
+    line-height: 1.4;
+    border-top: 1px solid var(--border-color);
+    padding-top: 0;
+}
+
+.timeline-card:hover .timeline-card-desc {
+    max-height: 200px;
+    opacity: 1;
+    padding-top: 0.5rem;
+    margin-top: 0.75rem;
+}
+
+.timeline-card-header {
+    margin-bottom: 0; /* Header and meta are now the primary visibility */
+}
+
+.timeline-card-meta {
+    margin-top: 0.25rem;
 }

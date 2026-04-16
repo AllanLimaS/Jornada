@@ -81,28 +81,24 @@ def api_delete_atividade(atividade_id: int, session: Session = Depends(get_sessi
 # HTMX — /htmx/atividades
 # =============================================================================
 
-def _build_chamados_map(session: Session, atividades):
-    """Helper: constrói mapa {chamado_id: Chamado} para exibir títulos."""
-    ids = [atv.chamado_id for atv in atividades if atv.chamado_id]
-    return chamado_service.get_chamados_map(session, ids) if ids else {}
 
 def _render_timeline(request: Request, session: Session, data_ref: date_type):
     """Helper: renderiza a timeline de atividades de uma data específica."""
     atividades = atividade_service.get_atividades_by_date(session, data_ref)
-    atividades.sort(key=lambda x: x.hora_inicio)
+    atividades.sort(key=lambda x: (x.hora_inicio is None, x.hora_inicio))
     total_minutos = sum(atv.duracao_minutos for atv in atividades)
     horas = total_minutos // 60
     minutos = total_minutos % 60
-    chamados_map = _build_chamados_map(session, atividades)
+    minutos = total_minutos % 60
     is_today = (data_ref == date_type.today())
     
     # Cálculo de horário dinâmico para a agenda (Mínimo 08h e Máximo 18h)
     min_h = 8
     max_h = 18
     for atv in atividades:
-        if atv.hora_inicio.hour < min_h:
+        if atv.hora_inicio and atv.hora_inicio.hour < min_h:
             min_h = atv.hora_inicio.hour
-        if atv.hora_fim.hour >= max_h:
+        if atv.hora_fim and atv.hora_fim.hour >= max_h:
             max_h = atv.hora_fim.hour + 1
             
     return templates.TemplateResponse(
@@ -112,7 +108,7 @@ def _render_timeline(request: Request, session: Session, data_ref: date_type):
             "atividades": atividades, 
             "total_horas": horas, 
             "total_minutos": minutos, 
-            "chamados_map": chamados_map,
+            "total_minutos": minutos, 
             "is_today": is_today,
             "min_h": min_h,
             "max_h": max_h
@@ -133,10 +129,9 @@ def htmx_form_new_atividade(request: Request):
 @router.get("/htmx/atividades/{id}/form-edit")
 def htmx_form_edit_atividade(request: Request, id: int, edit_context: str = "hoje", session: Session = Depends(get_session)):
     atividade = session.get(models.Atividade, id)
-    chamados_map = _build_chamados_map(session, [atividade]) if atividade else {}
     return templates.TemplateResponse(
         "partials/atividade_form.html",
-        {"request": request, "atividade": atividade, "chamados_map": chamados_map, "edit_context": edit_context}
+        {"request": request, "atividade": atividade, "edit_context": edit_context}
     )
 
 @router.get("/htmx/atividades/timeline")
@@ -147,8 +142,8 @@ def htmx_timeline_today(request: Request, session: Session = Depends(get_session
 async def htmx_create_atividade(
     request: Request,
     data_referencia: date_type = Form(...),
-    hora_inicio: time = Form(...),
-    hora_fim: time = Form(...),
+    hora_inicio: Optional[time] = Form(None),
+    hora_fim: Optional[time] = Form(None),
     descricao: str = Form(...),
     portal_status: str = Form("pendente"),
     chamado_id: Optional[str] = Form(None),
@@ -182,8 +177,8 @@ async def htmx_edit_atividade(
     request: Request,
     atividade_id: int,
     data_referencia: date_type = Form(...),
-    hora_inicio: time = Form(...),
-    hora_fim: time = Form(...),
+    hora_inicio: Optional[time] = Form(None),
+    hora_fim: Optional[time] = Form(None),
     descricao: str = Form(...),
     portal_status: str = Form("pendente"),
     chamado_id: Optional[str] = Form(None),
@@ -244,13 +239,13 @@ async def htmx_update_atividade_status(
 @router.get("/htmx/atividades/lista")
 def htmx_atividades_lista_content(request: Request, aba: str = "todos", session: Session = Depends(get_session)):
     atividades = atividade_service.get_atividades_by_status(session, aba)
-    chamados_map = _build_chamados_map(session, atividades)
     return templates.TemplateResponse(
         "partials/atividades_list.html",
-        {"request": request, "atividades": atividades, "aba": aba, "chamados_map": chamados_map}
+        {"request": request, "atividades": atividades, "aba": aba}
     )
 
 # --- Chamado Picker (popup de seleção de chamado no formulário) ---
+
 
 @router.get("/htmx/chamado-picker")
 def htmx_chamado_picker(request: Request, session: Session = Depends(get_session)):

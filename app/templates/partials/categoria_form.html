@@ -9,8 +9,9 @@
         {% else %}
         hx-post="/htmx/categorias-chamado" 
         {% endif %}
-        hx-target="#categorias-list" 
+        hx-target="#categorias-list-container" 
         hx-swap="innerHTML" 
+        hx-on::after-request="if(event.detail.successful) document.getElementById('global-modal').classList.remove('active')"
         class="js-reset-on-success">
         
         <div class="form-group">

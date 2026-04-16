@@ -9,8 +9,9 @@
         {% else %}
         hx-post="/htmx/status-chamado" 
         {% endif %}
-        hx-target="#status-list" 
+        hx-target="#status-list-container" 
         hx-swap="innerHTML" 
+        hx-on::after-request="if(event.detail.successful) document.getElementById('global-modal').classList.remove('active')"
         class="js-reset-on-success">
         
         <div class="form-group">

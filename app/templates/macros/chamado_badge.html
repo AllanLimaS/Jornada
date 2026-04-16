@@ -1,0 +1,35 @@
+{#
+  macros/chamado_badge.html
+  Macro reutilizável para renderizar o badge de chamado.
+  Agora utiliza os relacionamentos (Relationship) do SQLModel para obter cor e título.
+
+  Uso:
+    {% from "macros/chamado_badge.html" import chamado_badge %}
+    {{ chamado_badge(atv.chamado, show_number=False) }}
+
+  Parâmetros:
+    chamado          — Objeto Chamado ou None
+    show_number      — Se True, exibe o número do chamado. Se False, exibe o título.
+#}
+
+{% macro chamado_badge(chamado, show_number=False) %}
+  {% if chamado %}
+    {% set cor = chamado.categoria.cor if chamado.categoria else None %}
+    
+    {% if show_number %}
+      {% set content = '#' ~ chamado.numero %}
+    {% else %}
+      {% set content = chamado.titulo %}
+    {% endif %}
+
+    {% if cor %}
+      <span class="badge badge-chamado-cat" style="border-color: {{ cor }};">
+        {{ content }}
+      </span>
+    {% else %}
+      <span class="badge badge-chamado">
+        {{ content }}
+      </span>
+    {% endif %}
+  {% endif %}
+{% endmacro %}

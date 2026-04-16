@@ -48,11 +48,11 @@ run.bat
 ### Rodar o Projeto (Manual)
 1. **Ativar Venv:** `.\.venv\Scripts\activate` (Windows) ou `source .venv/bin/activate` (Linux/Mac)
 2. **Instalar:** `pip install -r requirements.txt`
-3. **Servidor:** `uvicorn main:app --reload`
+3. **Servidor:** `uvicorn main:app --reload --port 7734`
 
 ### Documentação da API
-- **Swagger UI:** `http://127.0.0.1:8000/docs`
-- **Redoc:** `http://127.0.0.1:8000/redoc`
+- **Swagger UI:** `http://127.0.0.1:7734/docs`
+- **Redoc:** `http://127.0.0.1:7734/redoc`
 
 ## Regras de Ouro para a IA
 1. **Mantenha a Simplicidade:** O projeto preza por ser leve e local.

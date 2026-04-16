@@ -39,14 +39,28 @@ def delete_chamado(session: Session, chamado_id: int):
     session.commit()
     return {"ok": True}
 
-def search_chamados(session: Session, query: Optional[str] = None, limit: int = 100):
-    """Busca chamados por número ou título. Se query for None, retorna todos."""
-    if query:
-        statement = select(Chamado).where(
-            or_(Chamado.numero.contains(query), Chamado.titulo.contains(query))
-        ).order_by(Chamado.updated_at.desc()).limit(limit)
-    else:
-        statement = select(Chamado).order_by(Chamado.updated_at.desc()).limit(limit)
+def search_chamados(session: Session, 
+                   query: Optional[str] = None, 
+                   categoria_id: Optional[int] = None, 
+                   status_id: Optional[int] = None,
+                   limit: int = 100):
+    """Busca chamados por número ou título, filtrando por categoria e status."""
+    statement = select(Chamado)
+    
+    conditions = []
+    if query and query.strip():
+        conditions.append(or_(Chamado.numero.contains(query.strip()), Chamado.titulo.contains(query.strip())))
+    
+    if categoria_id:
+        conditions.append(col(Chamado.categoria_id) == categoria_id)
+    
+    if status_id:
+        conditions.append(col(Chamado.status_id) == status_id)
+    
+    if conditions:
+        statement = statement.where(*conditions)
+        
+    statement = statement.order_by(Chamado.updated_at.desc()).limit(limit)
     return session.exec(statement).all()
 
 def get_chamados_recentes(session: Session, limit: int = 10):
@@ -84,14 +98,23 @@ def get_ultima_atividade_map(session: Session) -> Dict[int, str]:
     results = session.exec(statement).all()
     return {row[0]: row[1] for row in results}
 
-def get_chamados_with_ultima_atv(session: Session, query: Optional[str] = None, limit: int = 100):
-    """Retorna lista de chamados com data da última atividade, ordenados por essa data (mais recente primeiro)."""
+def get_chamados_with_ultima_atv(
+    session: Session, 
+    query: Optional[str] = None, 
+    categoria_id: Optional[int] = None,
+    status_id: Optional[int] = None,
+    limit: int = 100
+):
+    """Retorna lista de chamados com data da última atividade, aplicando filtros e ordenação."""
     ultimo_map = get_ultima_atividade_map(session)
     
-    if query:
-        chamados = search_chamados(session, query=query, limit=limit)
-    else:
-        chamados = get_chamados(session, limit=limit)
+    chamados = search_chamados(
+        session, 
+        query=query, 
+        categoria_id=categoria_id, 
+        status_id=status_id, 
+        limit=limit
+    )
     
     # Adiciona atributo extra e ordena por última atividade (desc), chamados sem atividade ficam por último
     result = []

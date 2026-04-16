@@ -18,6 +18,6 @@ pip install -r requirements.txt
 
 echo.
 echo [3/3] Subindo servidor FastAPI via Uvicorn...
-uvicorn main:app --reload
+uvicorn main:app --reload --port 7734
 
 pause

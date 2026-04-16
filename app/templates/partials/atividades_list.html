@@ -1,3 +1,4 @@
+{% from "macros/chamado_badge.html" import chamado_badge %}
 <div id="atividades-list">
     {% if atividades %}
         <div class="timeline">
@@ -13,8 +14,7 @@
                             </span>
                             <span>{{ atv.duracao_minutos }} min</span>
                             {% if atv.chamado_id %}
-                                {% set ch = chamados_map.get(atv.chamado_id) if chamados_map else None %}
-                                <span class="badge badge-chamado">{{ ch.titulo if ch else ('Chamado #' ~ atv.chamado_id) }}</span>
+                                {{ chamado_badge(atv.chamado) }}
                             {% endif %}
                             <a href="javascript:void(0)" class="text-sm text-muted" style="text-decoration: underline;" 
                                hx-get="/htmx/atividades/{{ atv.id }}/form-edit?edit_context=atividades" 

@@ -410,6 +410,14 @@ select.form-control {
   border-color: transparent;
 }
 
+.badge-chamado-cat {
+  background-color: transparent;
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  /* border-color é definido inline com a cor da categoria */
+}
+
 .badge-status {
   text-transform: uppercase;
   font-size: 0.65rem;
@@ -748,6 +756,17 @@ select.form-control {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1;
+}
+
+.chamado-picker-cat {
+  font-size: 0.65rem;
+  font-weight: 500;
+  padding: 0.1rem 0.45rem;
+  border-radius: 9999px;
+  border: 1px solid;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .chamado-picker-empty {
@@ -831,4 +850,35 @@ select.form-control {
 /* Fix para o fundo das setas e do container interno */
 .flatpickr-innerContainer, .flatpickr-rContainer {
   background-color: var(--bg-surface) !important;
+}
+
+/* Feedback de Salvamento do Expediente */
+.expediente-saved-msg {
+    opacity: 0;
+    font-size: 0.7rem;
+    color: #10B981; /* var(--color-success) ou verde similar */
+    transition: opacity 0.3s ease;
+    font-weight: 600;
+}
+
+.expediente-saved-msg.visible {
+    opacity: 1;
+    animation: fadeOutDelay 2s forwards;
+}
+
+@keyframes fadeOutDelay {
+    0%, 70% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/* HTMX Indicators */
+.htmx-indicator {
+    opacity: 0;
+    transition: opacity 200ms ease-in;
+    pointer-events: none;
+    display: inline-block;
+}
+.htmx-request .htmx-indicator,
+.htmx-request.htmx-indicator {
+    opacity: 1;
 }

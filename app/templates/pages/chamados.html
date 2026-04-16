@@ -2,7 +2,15 @@
 
 {% block content %}
 <div class="flex items-center justify-between mb-6">
-    <h2 class="text-xl font-semibold">Gestão de Chamados</h2>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <h2 class="text-xl font-semibold">Gestão de Chamados</h2>
+        <div class="htmx-indicator" style="color: var(--accent-color); font-size: 0.8rem; font-weight: 500;">
+            <div style="display: flex; align-items: center; gap: 0.25rem;">
+                <svg class="spinner" width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke="currentColor"><style>.spinner{transform-origin:center;animation:spinner_rotate 2s linear infinite}@keyframes spinner_rotate{100%{transform:rotate(360deg)}}</style><path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25"/><path d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z"/></svg>
+                <span>Processando...</span>
+            </div>
+        </div>
+    </div>
     <button class="btn btn-primary" 
             hx-get="/htmx/chamados/form-new" 
             hx-target="#new-chamado-content" 
@@ -28,14 +36,40 @@
     </div>
 </div>
 
-<!-- Barra de Busca -->
-<div class="form-group">
-    <input class="form-control" type="search" 
-           name="q" placeholder="Buscar chamados por número ou título..." 
-           hx-get="/htmx/chamados/search" 
-           hx-trigger="keyup changed delay:500ms, search" 
-           hx-target="#chamados-list" 
-           hx-indicator=".htmx-indicator">
+<!-- Filtros -->
+<div class="filters-container mb-6" 
+     hx-get="/htmx/chamados/search" 
+     hx-target="#chamados-list" 
+     hx-include="[name='q'], [name='categoria_id'], [name='status_id']"
+     hx-trigger="change from:select, keyup changed delay:500ms from:input"
+     hx-indicator=".htmx-indicator">
+    
+    <div style="display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 1rem; align-items: end;">
+        <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Busca</label>
+            <input class="form-control" type="search" name="q" placeholder="Buscar por número ou título..." autocomplete="off">
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Categoria</label>
+            <select class="form-control" name="categoria_id">
+                <option value="">Todas Categorias</option>
+                {% for cat in categorias %}
+                <option value="{{ cat.id }}">{{ cat.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Status</label>
+            <select class="form-control" name="status_id">
+                <option value="">Todos Status</option>
+                {% for st in statuses %}
+                <option value="{{ st.id }}">{{ st.nome }}</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
 </div>
 
 <!-- Listagem Central -->

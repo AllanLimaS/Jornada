@@ -27,10 +27,10 @@ Construído com extrema simplicidade utilizando FastAPI, SQLModel e SQLite.
 
 3. **Suba o Servidor (Uvicorn):**
    ```bash
-   uvicorn main:app --reload
+   uvicorn main:app --reload --port 7734
    ```
 
 ## Acesso e Banco
-- A aplicação principal responderá em: http://127.0.0.1:8000
+- A aplicação principal responderá em: http://127.0.0.1:7734
 - O banco de dados `database.db` será gerado automaticamente na raiz assim que rodar o comando pela primeira vez.
-- Visualize as rotas automatizadas em: http://127.0.0.1:8000/docs
+- Visualize as rotas automatizadas em: http://127.0.0.1:7734/docs

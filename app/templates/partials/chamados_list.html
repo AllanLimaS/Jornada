@@ -12,9 +12,7 @@
             </tr>
         </thead>
         <tbody>
-            {% for ch in chamados %}
-            {% set cat = categorias_map.get(ch.categoria_id) %}
-            {% set st = statuses_map.get(ch.status_id) %}
+             {% for ch in chamados %}
             <tr style="border-bottom: 1px solid var(--border-color-strong); transition: var(--transition);">
                 <td style="padding: 1rem 0.5rem; font-weight: 600;">{{ ch.numero }}</td>
                 <td style="padding: 1rem 0.5rem; color: var(--text-main); cursor: pointer;" 
@@ -24,9 +22,9 @@
                     {{ ch.titulo }}
                 </td>
                 <td style="padding: 1rem 0.5rem;">
-                    {% if cat %}
-                    <span class="badge" style="background-color: {{ cat.cor }}22; color: {{ cat.cor }}; border-color: {{ cat.cor }}44;">
-                        {{ cat.nome }}
+                    {% if ch.categoria %}
+                    <span class="badge" style="background-color: {{ ch.categoria.cor }}22; color: {{ ch.categoria.cor }}; border-color: {{ ch.categoria.cor }}44;">
+                        {{ ch.categoria.nome }}
                     </span>
                     {% else %}
                     <span style="color: var(--text-placeholder);">—</span>
@@ -40,9 +38,9 @@
                     {% endif %}
                 </td>
                 <td style="padding: 1rem 0.5rem;">
-                    {% if st %}
-                    <span class="badge" style="background-color: {{ st.cor }}; color: white; border: none; font-size: 0.65rem;">
-                        {{ st.nome.upper() }}
+                    {% if ch.status %}
+                    <span class="badge" style="background-color: {{ ch.status.cor }}; color: white; border: none; font-size: 0.65rem;">
+                        {{ ch.status.nome.upper() }}
                     </span>
                     {% else %}
                     <span class="badge badge-outline" style="font-size: 0.65rem;">SEM STATUS</span>

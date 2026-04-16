@@ -139,10 +139,38 @@ document.addEventListener('DOMContentLoaded', () => {
   // Inicializa na carga da página
   initFormDatepickers();
 
+  // Task 3: Auto-complete time on blur
+  document.addEventListener('blur', function(e) {
+    if (e.target.classList.contains('js-time-mask')) {
+      let v = e.target.value;
+      if (!v) return;
+
+      // Normalize common entries
+      if (/^\d{1,2}$/.test(v)) {
+        v = v.padStart(2, '0') + ':00';
+      } else if (/^\d{1,2}:\d$/.test(v)) {
+        let parts = v.split(':');
+        v = parts[0].padStart(2, '0') + ':' + parts[1] + '0';
+      }
+      
+      // Cleanup invalid garbage
+      if (!/^\d{2}:\d{2}$/.test(v)) {
+        if (!/^\d{1,2}:\d{1,2}$/.test(v)) v = '';
+      }
+
+      e.target.value = v;
+      // Trigger input event to ensure any listeners (like autosave) catch the change
+      e.target.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  }, true);
+
   // Auto-expand on HTMX swap e inicialização de componentes
   document.body.addEventListener('htmx:afterSwap', function(evt) {
     const target = evt.detail.target;
     
+    // Task 1: Garantir que HTMX processe novos elementos (corrige botões que param de funcionar)
+    htmx.process(target);
+
     // Auto-ajuste de textarea (no elemento ou em seus filhos)
     const textareas = target.querySelectorAll('textarea.form-control');
     textareas.forEach(autoExpandTextarea);
@@ -168,6 +196,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     }
+
+    // Task 2: Restore Chamado Draft
+    if (target.querySelector('.js-chamado-form')) {
+       restoreChamadoDraft(target.querySelector('.js-chamado-form'));
+    }
+
+    // Feedback visual do expediente
+    if (target.id === 'expediente-container') {
+      const feedback = document.getElementById('expediente-save-feedback');
+      if (feedback) {
+        feedback.classList.add('visible');
+        setTimeout(() => feedback.classList.remove('visible'), 2200);
+      }
+    }
   });
 
   // Mascara de Horário Restritiva (HH:MM)
@@ -187,27 +229,63 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       e.target.value = v;
     }
+
+    // Task 2: Autosave Chamado Draft
+    const chamadoForm = e.target.closest('.js-chamado-form');
+    if (chamadoForm) {
+      debounce(() => saveChamadoDraft(chamadoForm), 500)();
+    }
   });
 
-  // HTMX Helper: Handle 400 and 422 errors globally
+  // HTMX Helper: Handle 400 and 422 errors globally with granular messages
   document.body.addEventListener('htmx:beforeOnLoad', function (evt) {
-    const status = evt.detail.xhr.status;
-    if (status === 400 || status === 422) {
+    const xhr = evt.detail.xhr;
+    const status = xhr.status;
+    
+    if (status >= 400 && status < 600) {
       const errorDiv = document.getElementById('form-error');
-      if (errorDiv) {
-        if (status === 422) {
-          errorDiv.innerText = "Dados inválidos: verifique os formatos de hora (00:00 - 23:59).";
-        } else {
-          errorDiv.innerText = evt.detail.xhr.responseText;
+      if (!errorDiv) return;
+
+      let message = "Ocorreu um erro ao processar a requisição (Erro " + status + ").";
+      
+      try {
+        const response = JSON.parse(xhr.responseText);
+        if (response.detail) {
+          if (Array.isArray(response.detail)) {
+            // Formato standard do FastAPI/Pydantic para erros de validação
+            message = response.detail.map(err => {
+              const field = err.loc[err.loc.length - 1];
+              const fieldName = field === 'hora_inicio' ? 'Hora Início' : 
+                               field === 'hora_fim' ? 'Hora Fim' : 
+                               field === 'data_referencia' ? 'Data' : field;
+              return `${fieldName}: ${err.msg}`;
+            }).join('<br>');
+          } else {
+            message = response.detail;
+          }
         }
-        errorDiv.style.display = 'block';
-        
-        // Reset loading button if needed
-        const submitBtn = document.querySelector('form button[type="submit"]');
-        if (submitBtn) submitBtn.classList.remove('htmx-request');
+      } catch (e) {
+        // Se não for JSON, usa o texto puro (fallback para PlainTextResponse)
+        message = xhr.responseText || message;
       }
+
+      errorDiv.innerHTML = message;
+      errorDiv.style.display = 'block';
+      
+      // Unlock submit button
+      const submitBtn = document.querySelector('form button[type="submit"]');
+      if (submitBtn) submitBtn.classList.remove('htmx-request');
     }
   }, true);
+
+  // Limpar erros ao iniciar nova requisição
+  document.body.addEventListener('htmx:beforeRequest', function(evt) {
+    const errorDiv = document.getElementById('form-error');
+    if (errorDiv) {
+      errorDiv.style.display = 'none';
+      errorDiv.innerHTML = '';
+    }
+  });
 
   // Listener para fechar o modal via trigger do servidor (HX-Trigger: closeModal)
   document.body.addEventListener('closeModal', function() {
@@ -215,13 +293,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (modal) modal.classList.remove('active');
   });
 
-  // HTMX Helper: Handle 400 errors globally
-  document.body.addEventListener('htmx:beforeOnLoad', function (evt) {
-    if (evt.detail.xhr.status === 400) {
-      const errorDiv = document.getElementById('form-error');
-      if (errorDiv) {
-        errorDiv.innerText = evt.detail.xhr.responseText;
-        errorDiv.style.display = 'block';
+  // Task 2: Clear draft on success
+  document.body.addEventListener('htmx:afterRequest', function(evt) {
+    if (evt.detail.successful && evt.detail.xhr.status === 200) {
+      const form = evt.target.closest('.js-chamado-form');
+      if (form) {
+        const chamadoId = form.dataset.chamadoId || 'novo';
+        localStorage.removeItem(`jornada_draft_chamado_${chamadoId}`);
       }
     }
   });
@@ -283,6 +361,56 @@ function trapFocus(e, container) {
 function autoExpandTextarea(textarea) {
   textarea.style.height = 'auto';
   textarea.style.height = (textarea.scrollHeight + 2) + 'px';
+}
+
+// =============================================================================
+// Task 2: Chamado Autosave Helpers
+// =============================================================================
+
+function saveChamadoDraft(form) {
+  const chamadoId = form.dataset.chamadoId || 'novo';
+  const formData = new FormData(form);
+  const data = {};
+  formData.forEach((value, key) => data[key] = value);
+  localStorage.setItem(`jornada_draft_chamado_${chamadoId}`, JSON.stringify(data));
+  
+  const indicator = form.querySelector('.js-draft-indicator');
+  if (indicator) {
+    const now = new Date();
+    const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    indicator.textContent = `Rascunho salvo • ${timeStr}`;
+    indicator.style.opacity = '1';
+  }
+}
+
+function restoreChamadoDraft(form) {
+  const chamadoId = form.dataset.chamadoId || 'novo';
+  const saved = localStorage.getItem(`jornada_draft_chamado_${chamadoId}`);
+  if (saved) {
+    const data = JSON.parse(saved);
+    Object.keys(data).forEach(key => {
+      const input = form.querySelector(`[name="${key}"]`);
+      if (input && data[key]) {
+        input.value = data[key];
+        if (input.tagName === 'TEXTAREA') autoExpandTextarea(input);
+      }
+    });
+    
+    const indicator = form.querySelector('.js-draft-indicator');
+    if (indicator) {
+      indicator.textContent = 'Rascunho restaurado';
+      indicator.style.opacity = '1';
+      setTimeout(() => indicator.style.opacity = '0.7', 2000);
+    }
+  }
+}
+
+let debounceTimer;
+function debounce(func, delay) {
+  return function() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => func(), delay);
+  }
 }
 
 // =============================================================================
