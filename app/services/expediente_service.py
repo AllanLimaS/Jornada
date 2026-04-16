@@ -16,10 +16,10 @@ def get_or_create_expediente(session: Session, data_ref: date) -> Expediente:
 def update_expediente(session: Session, data_ref: date, data: ExpedienteUpdate) -> Expediente:
     expediente = get_or_create_expediente(session, data_ref)
     
-    if data.entrada_1 is not None: expediente.entrada_1 = data.entrada_1
-    if data.saida_1 is not None: expediente.saida_1 = data.saida_1
-    if data.entrada_2 is not None: expediente.entrada_2 = data.entrada_2
-    if data.saida_2 is not None: expediente.saida_2 = data.saida_2
+    if data.entrada_1 is not None or data.entrada_1 is None: expediente.entrada_1 = data.entrada_1
+    if data.saida_1 is not None or data.saida_1 is None: expediente.saida_1 = data.saida_1
+    if data.entrada_2 is not None or data.entrada_2 is None: expediente.entrada_2 = data.entrada_2
+    if data.saida_2 is not None or data.saida_2 is None: expediente.saida_2 = data.saida_2
     
     expediente.updated_at = datetime.utcnow()
     session.add(expediente)

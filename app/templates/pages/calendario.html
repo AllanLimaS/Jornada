@@ -72,7 +72,19 @@
     <!-- Direita: Timeline do dia selecionado -->
     <div>
         <div class="card">
-            <h3 class="card-title mb-4">Linha do Tempo</h3>
+            <h3 class="card-title mb-4" style="display: flex; justify-content: space-between; align-items: center;">
+                Linha do Tempo
+                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <div class="badge badge-outline text-sm" style="font-weight: normal;">Total: <span id="total-horas-dia" class="font-semibold" style="margin-left: 4px;">0h 0m</span></div>
+                    <button class="btn btn-primary btn-sm"
+                            hx-get="/htmx/atividades/form-new"
+                            hx-target="#global-modal-body"
+                            hx-include="#inline-calendar"
+                            style="padding: 0.25rem 0.5rem; font-size: 0.8rem;">
+                        Adicionar Atividade
+                    </button>
+                </div>
+            </h3>
             <div id="timeline-list">
                 <div class="empty-state">
                     Lembre-se de conectar a lógica do backend após as atualizações.

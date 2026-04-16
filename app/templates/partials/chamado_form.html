@@ -18,10 +18,9 @@
             hx-post="/htmx/chamados"
             {% endif %}
             hx-target="#chamados-list" 
-            hx-swap="outerHTML" 
+            hx-swap="innerHTML" 
             class="js-chamado-form"
-            data-chamado-id="{{ chamado.id if chamado else 'novo' }}"
-            onsubmit="document.getElementById('{% if chamado %}edit-chamado-modal{% else %}new-chamado-modal{% endif %}').classList.remove('active')">
+            data-chamado-id="{{ chamado.id if chamado else 'novo' }}">
             
             <div class="form-group row">
                 <div>

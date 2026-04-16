@@ -201,14 +201,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (target.querySelector('.js-chamado-form')) {
        restoreChamadoDraft(target.querySelector('.js-chamado-form'));
     }
+  });
 
-    // Feedback visual do expediente
-    if (target.id === 'expediente-container') {
-      const feedback = document.getElementById('expediente-save-feedback');
-      if (feedback) {
-        feedback.classList.add('visible');
-        setTimeout(() => feedback.classList.remove('visible'), 2200);
-      }
+  // Feedback visual do expediente
+  document.body.addEventListener('showExpedienteFeedback', function() {
+    const feedback = document.getElementById('expediente-save-feedback');
+    if (feedback) {
+      feedback.classList.add('visible');
+      setTimeout(() => feedback.classList.remove('visible'), 2200);
     }
   });
 
@@ -289,8 +289,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Listener para fechar o modal via trigger do servidor (HX-Trigger: closeModal)
   document.body.addEventListener('closeModal', function() {
-    const modal = document.getElementById('global-modal');
-    if (modal) modal.classList.remove('active');
+    document.querySelectorAll('.modal-overlay.active').forEach(modal => {
+      modal.classList.remove('active');
+    });
+    const globalModalDialog = document.getElementById('global-modal-dialog');
+    if (globalModalDialog) globalModalDialog.classList.remove('modal-lg');
   });
 
   // Task 2: Clear draft on success
@@ -298,8 +301,10 @@ document.addEventListener('DOMContentLoaded', () => {
     if (evt.detail.successful && evt.detail.xhr.status === 200) {
       const form = evt.target.closest('.js-chamado-form');
       if (form) {
+        clearTimeout(debounceTimer); // Evita o race condition do save pós-submit
         const chamadoId = form.dataset.chamadoId || 'novo';
         localStorage.removeItem(`jornada_draft_chamado_${chamadoId}`);
+        form.reset(); // Limpa visualmente o form que está num modal oculto
       }
     }
   });

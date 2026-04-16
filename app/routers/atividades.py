@@ -108,10 +108,10 @@ def _render_timeline(request: Request, session: Session, data_ref: date_type):
             "atividades": atividades, 
             "total_horas": horas, 
             "total_minutos": minutos, 
-            "total_minutos": minutos, 
             "is_today": is_today,
             "min_h": min_h,
-            "max_h": max_h
+            "max_h": max_h,
+            "view_date_str": data_ref.strftime("%Y-%m-%d")
         }
     )
 
@@ -120,18 +120,32 @@ def htmx_calendario_timeline(request: Request, data_ref: date_type, session: Ses
     return _render_timeline(request, session, data_ref)
 
 @router.get("/htmx/atividades/form-new")
-def htmx_form_new_atividade(request: Request):
+def htmx_form_new_atividade(request: Request, data_ref: Optional[date_type] = None, edit_context: str = "hoje"):
+    hoje = date_type.today()
+    ref_date = data_ref if data_ref else hoje
     return templates.TemplateResponse(
         "partials/atividade_form.html",
-        {"request": request, "atividade": None, "hoje_date": date_type.today().strftime("%Y-%m-%d")}
+        {
+            "request": request, 
+            "atividade": None, 
+            "hoje_date": ref_date.strftime("%Y-%m-%d"), 
+            "edit_context": edit_context,
+            "view_date": ref_date.strftime("%Y-%m-%d")
+        }
     )
 
 @router.get("/htmx/atividades/{id}/form-edit")
-def htmx_form_edit_atividade(request: Request, id: int, edit_context: str = "hoje", session: Session = Depends(get_session)):
+def htmx_form_edit_atividade(request: Request, id: int, edit_context: str = "hoje", view_date: Optional[date_type] = None, session: Session = Depends(get_session)):
     atividade = session.get(models.Atividade, id)
+    v_date = view_date if view_date else (atividade.data_referencia if atividade else date_type.today())
     return templates.TemplateResponse(
         "partials/atividade_form.html",
-        {"request": request, "atividade": atividade, "edit_context": edit_context}
+        {
+            "request": request, 
+            "atividade": atividade, 
+            "edit_context": edit_context,
+            "view_date": v_date.strftime("%Y-%m-%d")
+        }
     )
 
 @router.get("/htmx/atividades/timeline")
@@ -147,6 +161,7 @@ async def htmx_create_atividade(
     descricao: str = Form(...),
     portal_status: str = Form("pendente"),
     chamado_id: Optional[str] = Form(None),
+    view_date: Optional[date_type] = Form(None),
     session: Session = Depends(get_session)
 ):
     c_id = None
@@ -168,7 +183,7 @@ async def htmx_create_atividade(
         from fastapi.responses import PlainTextResponse
         return PlainTextResponse(str(e.detail), status_code=400)
 
-    response = _render_timeline(request, session, data_referencia)
+    response = _render_timeline(request, session, view_date if view_date else data_referencia)
     response.headers["HX-Trigger"] = "closeModal"
     return response
 
@@ -183,6 +198,7 @@ async def htmx_edit_atividade(
     portal_status: str = Form("pendente"),
     chamado_id: Optional[str] = Form(None),
     edit_context: str = Form("hoje"),
+    view_date: Optional[date_type] = Form(None),
     session: Session = Depends(get_session)
 ):
     c_id = None
@@ -208,7 +224,7 @@ async def htmx_edit_atividade(
     if edit_context == "atividades":
         response = htmx_atividades_lista_content(request, "todos", session)
     else:
-        response = _render_timeline(request, session, data_referencia)
+        response = _render_timeline(request, session, view_date if view_date else data_referencia)
     
     response.headers["HX-Trigger"] = "closeModal"
     return response

@@ -30,6 +30,7 @@
         {% if edit_context %}
         <input type="hidden" name="edit_context" value="{{ edit_context }}">
         {% endif %}
+        <input type="hidden" name="view_date" value="{{ view_date if view_date else hoje_date }}">
 
         <div class="grid-form-2-cols">
             <div class="grid-form-left">
@@ -133,3 +134,15 @@
         </div>
     </div>
 </div>
+
+<script>
+    (function(){
+        var container = document.getElementById('atividade-form-container');
+        if (container) {
+            var dialog = container.closest('.modal-dialog');
+            if (dialog) {
+                dialog.classList.add('modal-lg');
+            }
+        }
+    })();
+</script>

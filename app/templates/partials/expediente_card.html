@@ -1,13 +1,43 @@
+{% if is_update %}
+<!-- Resposta OOB: Atualiza blocos parciais sem mexer no formulário (não perde foco) -->
+<span id="expediente-meta-str" class="text-muted" style="font-size: 0.7rem;" hx-swap-oob="true">Meta: {{ stats.meta_str }}</span>
+
+<div id="jornada-result-block" class="jornada-result" style="margin-top: 1rem; padding: 0.75rem; background-color: var(--bg-surface-hover); border-radius: 4px;" hx-swap-oob="true">
+    {% if stats.is_complete_morning and stats.target_exit_str %}
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-muted" style="font-size: 0.7rem; margin-bottom: 2px;">Saída recomendada:</p>
+                <div style="font-size: 1.25rem; font-weight: 700; color: var(--accent-color);">
+                    {{ stats.target_exit_str }}
+                </div>
+            </div>
+            <div style="text-align: right;">
+                <p class="text-muted" style="font-size: 0.7rem; margin-bottom: 2px;">Janela:</p>
+                <div style="font-size: 0.8rem; font-weight: 500;">
+                    {{ stats.window_start }} — {{ stats.window_end }}
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="text-center">
+            <p class="text-muted" style="font-size: 0.75rem;">
+                Projeção indisponível (manhã incompleta)
+            </p>
+        </div>
+    {% endif %}
+</div>
+{% else %}
 <div class="card">
     <div class="flex items-center justify-between mb-4">
         <h3 class="card-title" style="margin-bottom: 0; font-size: 0.9rem;">Expediente</h3>
         <div class="flex items-center gap-2">
             <div id="expediente-save-feedback" class="expediente-saved-msg">Salvo ✓</div>
-            <span class="text-muted" style="font-size: 0.7rem;">Meta: {{ stats.meta_str }}</span>
+            <span id="expediente-meta-str" class="text-muted" style="font-size: 0.7rem;">Meta: {{ stats.meta_str }}</span>
         </div>
     </div>
 
-    <form hx-post="/htmx/expediente/update" hx-trigger="change" hx-target="#expediente-container" hx-swap="innerHTML">
+    <!-- Modificado hx-swap="none" para que o HTMX não destrua o HTML e cause a perda de foco ao continuar logando! -->
+    <form hx-post="/htmx/expediente/update" hx-trigger="change" hx-swap="none">
         <input type="hidden" name="data_ref" value="{{ exp.data.strftime('%Y-%m-%d') }}">
         <div class="form-group" style="margin-bottom: 0.75rem;">
             <div class="row" style="gap: 0.4rem;">
@@ -39,7 +69,7 @@
         </div>
     </form>
 
-    <div class="jornada-result" style="margin-top: 1rem; padding: 0.75rem; background-color: var(--bg-surface-hover); border-radius: 4px;">
+    <div id="jornada-result-block" class="jornada-result" style="margin-top: 1rem; padding: 0.75rem; background-color: var(--bg-surface-hover); border-radius: 4px;">
         {% if stats.is_complete_morning and stats.target_exit_str %}
             <div class="flex items-center justify-between">
                 <div>
@@ -64,3 +94,4 @@
         {% endif %}
     </div>
 </div>
+{% endif %}

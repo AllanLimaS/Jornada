@@ -130,7 +130,9 @@ async def htmx_create_chamado(
         status_id=s_id
     )
     chamado_service.create_chamado(session, chamado_in)
-    return _render_chamados_list(request, session)
+    response = _render_chamados_list(request, session)
+    response.headers["HX-Trigger"] = "closeModal"
+    return response
 
 @router.get("/htmx/chamados/form-new")
 def htmx_get_chamado_form_new(request: Request, session: Session = Depends(get_session)):
@@ -199,7 +201,9 @@ async def htmx_update_chamado(
         status_id=s_id
     )
     chamado_service.update_chamado(session, chamado_id, update_data)
-    return _render_chamados_list(request, session)
+    response = _render_chamados_list(request, session)
+    response.headers["HX-Trigger"] = "closeModal"
+    return response
 
 @router.get("/htmx/chamados/{chamado_id}/delete-confirm")
 def htmx_delete_chamado_confirm(request: Request, chamado_id: int):

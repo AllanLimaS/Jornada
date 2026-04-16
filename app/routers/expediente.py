@@ -54,7 +54,9 @@ def htmx_update_expediente(
     exp = expediente_service.update_expediente(session, data_ref, data_update)
     stats = expediente_service.calculate_stats(session, exp)
     
-    return templates.TemplateResponse(
+    response = templates.TemplateResponse(
         "partials/expediente_card.html",
-        {"request": request, "exp": exp, "stats": stats}
+        {"request": request, "exp": exp, "stats": stats, "is_update": True}
     )
+    response.headers["HX-Trigger"] = "showExpedienteFeedback"
+    return response
