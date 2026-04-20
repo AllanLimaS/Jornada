@@ -56,9 +56,13 @@ document.addEventListener('DOMContentLoaded', () => {
       closeChamadoPicker();
     }
 
-    // Chamado Picker — fechar ao clicar no fundo (overlay)
-    if (e.target.id === 'chamado-picker-overlay') {
-      closeChamadoPicker();
+    // Chamado Picker — fechar ao clicar fora
+    const popup = document.getElementById('chamado-picker-popup');
+    const trigger = document.getElementById('chamado-picker-trigger');
+    if (popup && popup.style.display !== 'none') {
+      if (!popup.contains(e.target) && (!trigger || !trigger.contains(e.target))) {
+        closeChamadoPicker();
+      }
     }
 
     // Chamado Picker — limpar seleção
@@ -313,7 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('keydown', function(e) {
     if (e.key === 'Tab') {
       // Busca todos os overlays que estão ativos/visíveis
-      const overlays = Array.from(document.querySelectorAll('.modal-overlay.active, .chamado-picker-overlay')).filter(el => {
+      const overlays = Array.from(document.querySelectorAll('.modal-overlay.active, #chamado-picker-popup')).filter(el => {
         return el.classList.contains('active') || el.style.display === 'flex' || el.style.display === 'block';
       });
       
@@ -423,10 +427,10 @@ function debounce(func, delay) {
 // =============================================================================
 
 function openChamadoPicker() {
-  const overlay = document.getElementById('chamado-picker-overlay');
-  if (!overlay) return;
+  const popup = document.getElementById('chamado-picker-popup');
+  if (!popup) return;
 
-  overlay.style.display = 'flex';
+  popup.style.display = 'block';
 
   // Carrega resultados iniciais via HTMX
   const resultsDiv = document.getElementById('chamado-picker-results');
@@ -445,8 +449,8 @@ function openChamadoPicker() {
 }
 
 function closeChamadoPicker() {
-  const overlay = document.getElementById('chamado-picker-overlay');
-  if (overlay) overlay.style.display = 'none';
+  const popup = document.getElementById('chamado-picker-popup');
+  if (popup) popup.style.display = 'none';
 }
 
 function selectChamado(id, numero, titulo) {

@@ -54,20 +54,45 @@
                     <label class="form-label">Chamado (Opcional)</label>
                     <input type="hidden" name="chamado_id" id="chamado-id-input" value="{{ atividade.chamado_id if atividade and atividade.chamado_id else '' }}">
                     
-                    <div class="chamado-picker-trigger form-control" id="chamado-picker-trigger" tabindex="0">
-                        {% if atividade and atividade.chamado %}
+                    <div style="position: relative;" id="chamado-picker-container">
+                        <div class="chamado-picker-trigger form-control" id="chamado-picker-trigger" tabindex="0">
+                            {% if atividade and atividade.chamado %}
+                                <span class="chamado-picker-selected" id="chamado-display">
+                                    {{ chamado_badge(atividade.chamado, show_number=True) }}
+                                    <span class="chamado-picker-selected-title">{{ atividade.chamado.titulo }}</span>
+                                </span>
+                            {% elif atividade and atividade.chamado_id %}
                             <span class="chamado-picker-selected" id="chamado-display">
-                                {{ chamado_badge(atividade.chamado, show_number=True) }}
-                                <span class="chamado-picker-selected-title">{{ atividade.chamado.titulo }}</span>
+                                {# Fallback caso o objeto não esteja carregado mas o ID exista #}
+                                <span class="badge badge-chamado">#{{ atividade.chamado_id }}</span>
                             </span>
-                        {% elif atividade and atividade.chamado_id %}
-                        <span class="chamado-picker-selected" id="chamado-display">
-                            {# Fallback caso o objeto não esteja carregado mas o ID exista #}
-                            <span class="badge badge-chamado">#{{ atividade.chamado_id }}</span>
-                        </span>
-                        {% else %}
-                        <span class="chamado-picker-placeholder" id="chamado-display">Selecionar chamado...</span>
-                        {% endif %}
+                            {% else %}
+                            <span class="chamado-picker-placeholder" id="chamado-display">Selecionar chamado...</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Chamado Picker Popup (movido para junto do campo) -->
+                        <div class="chamado-picker-popup" id="chamado-picker-popup" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 101; width: 100%; max-width: none;">
+                            <div class="chamado-picker-header">
+                                <span class="chamado-picker-header-title">Selecionar Chamado</span>
+                                <button type="button" class="btn btn-ghost" style="padding: 0.25rem 0.5rem; font-size: 1rem;" id="chamado-picker-close">✕</button>
+                            </div>
+                            <div class="chamado-picker-search">
+                                <input type="search" 
+                                       class="form-control" 
+                                       placeholder="Buscar..." 
+                                       id="chamado-picker-search-input"
+                                       autocomplete="off"
+                                       hx-get="/htmx/chamado-picker/search" 
+                                       hx-trigger="input changed delay:300ms, search" 
+                                       hx-target="#chamado-picker-results"
+                                       hx-swap="innerHTML"
+                                       name="q">
+                            </div>
+                            <div id="chamado-picker-results">
+                                <!-- Conteúdo carregado via HTMX -->
+                            </div>
+                        </div>
                     </div>
 
                     <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem;">
@@ -110,30 +135,6 @@
 
 </div>
 
-<!-- Chamado Picker Popup (fora do card e do form) -->
-<div class="chamado-picker-overlay" id="chamado-picker-overlay" style="display: none;">
-    <div class="chamado-picker-popup" id="chamado-picker-popup">
-        <div class="chamado-picker-header">
-            <span class="chamado-picker-header-title">Selecionar Chamado</span>
-            <button type="button" class="btn btn-ghost" style="padding: 0.25rem 0.5rem; font-size: 1rem;" id="chamado-picker-close">✕</button>
-        </div>
-        <div class="chamado-picker-search">
-            <input type="search" 
-                   class="form-control" 
-                   placeholder="Buscar por título ou número..." 
-                   id="chamado-picker-search-input"
-                   autocomplete="off"
-                   hx-get="/htmx/chamado-picker/search" 
-                   hx-trigger="input changed delay:300ms, search" 
-                   hx-target="#chamado-picker-results"
-                   hx-swap="innerHTML"
-                   name="q">
-        </div>
-        <div id="chamado-picker-results">
-            <!-- Conteúdo carregado via HTMX -->
-        </div>
-    </div>
-</div>
 
 <script>
     (function(){

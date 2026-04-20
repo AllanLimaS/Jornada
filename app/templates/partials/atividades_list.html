@@ -55,13 +55,14 @@
                                hx-target="#global-modal-body">Editar</a>
                         </div>
                         {% if atv.portal_status.value == 'pendente' and aba != 'lancados' %}
-                        <form hx-patch="/htmx/atividades/{{ atv.id }}/status" hx-target="#atividades-list">
+                        <form hx-patch="/htmx/atividades/{{ atv.id }}/status" hx-target="#atividades-list" hx-swap="outerHTML">
                             <input type="hidden" name="status" value="lancado">
                             <input type="hidden" name="aba" value="{{ aba }}">
                             <button class="btn btn-secondary text-sm" style="padding: 0.25rem 0.5rem;">Marcar Lançado</button>
                         </form>
                         {% endif %}
                     </div>
+                </div>
                 </div>
                 {% endfor %}
             </div>
@@ -98,9 +99,9 @@
                                hx-target="#global-modal-body">Editar</a>
                         </div>
 
-                        <!-- Bot��o Marcar Lancado (Para abas pendente/todos) -->
+                        <!-- Botão Marcar Lançado (Para abas pendente/todos) -->
                         {% if atv.portal_status.value == 'pendente' and aba != 'lancados' %}
-                        <form hx-patch="/htmx/atividades/{{ atv.id }}/status" hx-target="#atividades-list">
+                        <form hx-patch="/htmx/atividades/{{ atv.id }}/status" hx-target="#atividades-list" hx-swap="outerHTML">
                             <input type="hidden" name="status" value="lancado">
                             <input type="hidden" name="aba" value="{{ aba }}">
                             <button class="btn btn-secondary text-sm" style="padding: 0.25rem 0.5rem;">Marcar Lançado</button>
