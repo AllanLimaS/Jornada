@@ -6,7 +6,7 @@ from typing import Optional, List
 
 from app.database import get_session
 from app import schemas, models
-from app.services import atividade_service, chamado_service
+from app.services import atividade_service, chamado_service, chamado_status_service
 
 router = APIRouter()
 templates = Jinja2Templates(directory="app/templates")
@@ -120,9 +120,10 @@ def htmx_calendario_timeline(request: Request, data_ref: date_type, session: Ses
     return _render_timeline(request, session, data_ref)
 
 @router.get("/htmx/atividades/form-new")
-def htmx_form_new_atividade(request: Request, data_ref: Optional[date_type] = None, edit_context: str = "hoje"):
+def htmx_form_new_atividade(request: Request, data_ref: Optional[date_type] = None, edit_context: str = "hoje", session: Session = Depends(get_session)):
     hoje = date_type.today()
     ref_date = data_ref if data_ref else hoje
+    statuses = chamado_status_service.get_statuses(session)
     return templates.TemplateResponse(
         "partials/atividade_form.html",
         {
@@ -130,7 +131,8 @@ def htmx_form_new_atividade(request: Request, data_ref: Optional[date_type] = No
             "atividade": None, 
             "hoje_date": ref_date.strftime("%Y-%m-%d"), 
             "edit_context": edit_context,
-            "view_date": ref_date.strftime("%Y-%m-%d")
+            "view_date": ref_date.strftime("%Y-%m-%d"),
+            "statuses": statuses
         }
     )
 
@@ -138,13 +140,15 @@ def htmx_form_new_atividade(request: Request, data_ref: Optional[date_type] = No
 def htmx_form_edit_atividade(request: Request, id: int, edit_context: str = "hoje", view_date: Optional[date_type] = None, session: Session = Depends(get_session)):
     atividade = session.get(models.Atividade, id)
     v_date = view_date if view_date else (atividade.data_referencia if atividade else date_type.today())
+    statuses = chamado_status_service.get_statuses(session)
     return templates.TemplateResponse(
         "partials/atividade_form.html",
         {
             "request": request, 
             "atividade": atividade, 
             "edit_context": edit_context,
-            "view_date": v_date.strftime("%Y-%m-%d")
+            "view_date": v_date.strftime("%Y-%m-%d"),
+            "statuses": statuses
         }
     )
 
@@ -161,12 +165,18 @@ async def htmx_create_atividade(
     descricao: str = Form(...),
     portal_status: str = Form("pendente"),
     chamado_id: Optional[str] = Form(None),
+    chamado_status_id: Optional[str] = Form(None),
     view_date: Optional[date_type] = Form(None),
     session: Session = Depends(get_session)
 ):
     c_id = None
     if chamado_id and chamado_id.strip():
         try: c_id = int(chamado_id)
+        except ValueError: pass
+
+    cs_id = None
+    if chamado_status_id and chamado_status_id.strip():
+        try: cs_id = int(chamado_status_id)
         except ValueError: pass
 
     try:
@@ -176,7 +186,8 @@ async def htmx_create_atividade(
             hora_fim=hora_fim,
             descricao=descricao,
             portal_status=models.AtividadePortalStatus(portal_status),
-            chamado_id=c_id
+            chamado_id=c_id,
+            chamado_status_id=cs_id
         )
         atividade_service.create_atividade(session, atividade_in)
     except HTTPException as e:
@@ -197,6 +208,7 @@ async def htmx_edit_atividade(
     descricao: str = Form(...),
     portal_status: str = Form("pendente"),
     chamado_id: Optional[str] = Form(None),
+    chamado_status_id: Optional[str] = Form(None),
     edit_context: str = Form("hoje"),
     view_date: Optional[date_type] = Form(None),
     session: Session = Depends(get_session)
@@ -206,6 +218,11 @@ async def htmx_edit_atividade(
         try: c_id = int(chamado_id)
         except ValueError: pass
 
+    cs_id = None
+    if chamado_status_id and chamado_status_id.strip():
+        try: cs_id = int(chamado_status_id)
+        except ValueError: pass
+
     try:
         update_data = schemas.AtividadeUpdate(
             data_referencia=data_referencia,
@@ -213,7 +230,8 @@ async def htmx_edit_atividade(
             hora_fim=hora_fim,
             descricao=descricao,
             portal_status=models.AtividadePortalStatus(portal_status),
-            chamado_id=c_id
+            chamado_id=c_id,
+            chamado_status_id=cs_id
         )
         atividade_service.update_atividade(session, atividade_id, update_data)
     except HTTPException as e:
@@ -244,16 +262,38 @@ async def htmx_update_atividade_status(
     atividade_id: int, 
     status: str = Form(...), 
     aba: str = Form("todos"),
+    alterar_status_chamado: Optional[str] = Form(None),
     session: Session = Depends(get_session)
 ):
     atividade = atividade_service.get_atividade(session, atividade_id)
     if atividade:
         update_data = schemas.AtividadeUpdate(portal_status=models.AtividadePortalStatus(status))
         atividade_service.update_atividade(session, atividade_id, update_data)
-    return htmx_atividades_lista_content(request, aba, session)
+        
+        if alterar_status_chamado == "sim" and atividade.chamado_id and atividade.chamado_status_id:
+            from app.schemas import ChamadoUpdate
+            update_chamado_data = ChamadoUpdate(status_id=atividade.chamado_status_id)
+            chamado_service.update_chamado(session, atividade.chamado_id, update_chamado_data)
+
+    response = htmx_atividades_lista_content(request, aba, session)
+    if alterar_status_chamado in ["sim", "nao"]:
+        response.headers["HX-Trigger"] = "closeModal"
+    return response
+
+@router.get("/htmx/atividades/{atividade_id}/lancar-modal")
+def htmx_lancar_modal(request: Request, atividade_id: int, aba: str, session: Session = Depends(get_session)):
+    atividade = atividade_service.get_atividade(session, atividade_id)
+    return templates.TemplateResponse(
+        "partials/atividade_lancar_modal.html",
+        {
+            "request": request, 
+            "atividade": atividade,
+            "aba": aba
+        }
+    )
 
 @router.get("/htmx/atividades/lista")
-def htmx_atividades_lista_content(request: Request, aba: str = "todos", session: Session = Depends(get_session)):
+def htmx_atividades_lista_content(request: Request, aba: str = "pendentes", session: Session = Depends(get_session)):
     atividades = atividade_service.get_atividades_by_status(session, aba)
     return templates.TemplateResponse(
         "partials/atividades_list.html",

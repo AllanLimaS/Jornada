@@ -72,7 +72,7 @@
                         </div>
 
                         <!-- Chamado Picker Popup (movido para junto do campo) -->
-                        <div class="chamado-picker-popup" id="chamado-picker-popup" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; z-index: 101; width: 100%; max-width: none;">
+                        <div class="chamado-picker-popup" id="chamado-picker-popup" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; z-index: 101; width: 550px; max-width: 90vw;">
                             <div class="chamado-picker-header">
                                 <span class="chamado-picker-header-title">Selecionar Chamado</span>
                                 <button type="button" class="btn btn-ghost" style="padding: 0.25rem 0.5rem; font-size: 1rem;" id="chamado-picker-close">✕</button>
@@ -97,6 +97,22 @@
 
                     <div style="margin-top: 0.5rem; display: flex; gap: 0.5rem;">
                         <span class="badge badge-outline" style="cursor: pointer;" id="chamado-clear-btn" tabindex="0">Sem Chamado</span>
+                    </div>
+                </div>
+
+                <!-- Novo campo de Status do Chamado -->
+                <div class="form-group" style="padding: 0.5rem; border: 1px solid var(--border-color); border-radius: var(--radius); margin-bottom: 1rem;">
+                    <label class="form-label" style="display: flex; align-items: center; gap: 0.625rem; margin-bottom: 0; cursor: pointer; font-size: 0.875rem; font-weight: 500;">
+                        <input type="checkbox" id="check-alterar-status" class="form-checkbox" onchange="document.getElementById('status-chamado-container').style.display = this.checked ? 'block' : 'none'" {% if atividade and atividade.chamado_status_id %}checked{% endif %}>
+                        Alterar status do chamado ao lançar
+                    </label>
+                    <div id="status-chamado-container" style="display: {% if atividade and atividade.chamado_status_id %}block{% else %}none{% endif %}; margin-top: 0.5rem;">
+                        <select name="chamado_status_id" class="form-control">
+                            <option value="">Selecione o novo status...</option>
+                            {% for s in statuses %}
+                            <option value="{{ s.id }}" {% if atividade and atividade.chamado_status_id == s.id %}selected{% endif %}>{{ s.nome }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
                 </div>
                 

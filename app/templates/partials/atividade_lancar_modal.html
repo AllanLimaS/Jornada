@@ -1,0 +1,59 @@
+<div class="card" id="atividade-lancar-modal-container">
+    <div class="form-group mb-4">
+        <p class="text-warning" style="font-weight: 500; font-size: 1.05rem;">
+            Deseja alterar o status do chamado #{{ atividade.chamado.numero }} para "{{ atividade.chamado_status.nome }}"?
+        </p>
+    </div>
+
+    <div class="flex" style="gap: 1rem; margin-top: 2rem;">
+        <form hx-patch="/htmx/atividades/{{ atividade.id }}/status" 
+              {% if aba == 'pendentes' %}hx-target="#atividade-item-{{ atividade.id }}" hx-swap="delete"{% else %}hx-target="#atividades-list" hx-swap="outerHTML"{% endif %} 
+              style="flex: 1;">
+            <input type="hidden" name="status" value="lancado">
+            <input type="hidden" name="aba" value="{{ aba }}">
+            <input type="hidden" name="alterar_status_chamado" value="nao">
+            <button type="submit" class="btn btn-ghost btn-block" style="background-color: rgba(0, 0, 0, 0.05); color: var(--text-muted); font-weight: normal;">Não, apenas lançar</button>
+        </form>
+
+        <form hx-patch="/htmx/atividades/{{ atividade.id }}/status" 
+              {% if aba == 'pendentes' %}hx-target="#atividade-item-{{ atividade.id }}" hx-swap="delete"{% else %}hx-target="#atividades-list" hx-swap="outerHTML"{% endif %} 
+              style="flex: 1;">
+            <input type="hidden" name="status" value="lancado">
+            <input type="hidden" name="aba" value="{{ aba }}">
+            <input type="hidden" name="alterar_status_chamado" value="sim">
+            <button type="submit" class="btn btn-primary btn-block">Sim, alterar status</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function(){
+        // Altera o título global do modal temporariamente
+        const titleEl = document.getElementById('global-modal-title');
+        const modalEl = document.getElementById('global-modal');
+        if (titleEl && modalEl) {
+            const originalTitle = titleEl.innerText;
+            titleEl.innerText = 'Alteração Chamado';
+            
+            // Restaura o título quando o modal fechar
+            const observer = new MutationObserver((mutations) => {
+                mutations.forEach((mutation) => {
+                    if (mutation.attributeName === 'class' && !modalEl.classList.contains('active')) {
+                        titleEl.innerText = originalTitle;
+                        observer.disconnect();
+                    }
+                });
+            });
+            observer.observe(modalEl, { attributes: true });
+        }
+
+        var container = document.getElementById('atividade-lancar-modal-container');
+        if (container) {
+            var dialog = container.closest('.modal-dialog');
+            if (dialog) {
+                // Manter tamanho normal (remover modal-lg se existir)
+                dialog.classList.remove('modal-lg');
+            }
+        }
+    })();
+</script>

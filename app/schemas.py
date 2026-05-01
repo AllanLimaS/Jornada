@@ -62,6 +62,7 @@ class AtividadeUpdate(BaseModel):
     descricao: str | None = Field(default=None)
     portal_status: AtividadePortalStatus | None = Field(default=None)
     chamado_id: int | None = Field(default=None)
+    chamado_status_id: int | None = Field(default=None)
 
 # --- Expediente ---
 class ExpedienteCreate(BaseModel):

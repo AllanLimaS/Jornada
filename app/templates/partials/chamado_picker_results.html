@@ -5,7 +5,6 @@
     <li class="chamado-picker-section-title">Usados recentemente</li>
     {% endif %}
     {% for chamado in chamados %}
-    {% set cat = categorias_map.get(chamado.categoria_id) if categorias_map and chamado.categoria_id else None %}
     <li class="chamado-picker-item" 
         data-id="{{ chamado.id }}"
         data-numero="{{ chamado.numero }}"
@@ -13,9 +12,16 @@
         tabindex="0">
         <span class="chamado-picker-numero">#{{ chamado.numero }}</span>
         <span class="chamado-picker-titulo">{{ chamado.titulo }}</span>
-        {% if cat %}
-        <span class="chamado-picker-cat" style="border-color: {{ cat.cor }}; color: var(--text-muted);">{{ cat.nome }}</span>
-        {% endif %}
+        
+        <div style="display: flex; gap: 0.5rem; flex-shrink: 0;">
+            {% if chamado.status %}
+            <span class="chamado-picker-cat" style="border-color: {{ chamado.status.cor }}; color: var(--text-muted);">{{ chamado.status.nome }}</span>
+            {% endif %}
+            
+            {% if chamado.categoria %}
+            <span class="chamado-picker-cat" style="border-color: {{ chamado.categoria.cor }}; color: var(--text-muted);">{{ chamado.categoria.nome }}</span>
+            {% endif %}
+        </div>
     </li>
     {% endfor %}
 </ul>

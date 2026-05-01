@@ -257,35 +257,39 @@ select.form-control {
   flex: 1;
 }
 
-/* Checkbox Personalizado */
+/* Checkbox Personalizado (Estilo Shadcn UI) */
 .form-checkbox {
   appearance: none;
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--border-color-strong);
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--border-color-strong);
   border-radius: 4px;
-  background-color: var(--bg-body);
+  background-color: transparent;
   cursor: pointer;
   position: relative;
-  transition: var(--transition);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.1s ease-in-out;
   flex-shrink: 0;
+  margin: 0;
+}
+
+[data-theme="dark"] .form-checkbox {
+  border-color: #3F3F46;
 }
 
 .form-checkbox:checked {
-  background-color: var(--accent-color);
-  border-color: var(--accent-color);
+  background-color: var(--text-main);
+  border-color: var(--text-main);
 }
 
 .form-checkbox:checked::after {
   content: "";
-  position: absolute;
-  left: 5px;
-  top: 1px;
-  width: 5px;
+  width: 10px;
   height: 10px;
-  border: solid white;
-  border-width: 0 2px 2px 0;
-  transform: rotate(45deg);
+  background-color: var(--bg-surface);
+  clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
 }
 
 .form-checkbox:focus {
@@ -680,7 +684,7 @@ select.form-control {
   border-radius: var(--radius);
   box-shadow: 0 16px 48px rgba(0, 0, 0, 0.2);
   width: 100%;
-  max-width: 420px;
+  max-width: 600px;
   overflow: hidden;
   animation: pickerSlideIn 0.15s ease-out;
 }

@@ -36,6 +36,7 @@ class AtividadeBase(SQLModel):
     descricao: str
     portal_status: AtividadePortalStatus = Field(default=AtividadePortalStatus.PENDENTE)
     chamado_id: Optional[int] = Field(default=None, foreign_key="chamado.id")
+    chamado_status_id: Optional[int] = Field(default=None, foreign_key="chamado_status.id")
 
 # --- Modelos de Tabela (DB) ---
 
@@ -80,6 +81,9 @@ class Atividade(AtividadeBase, table=True):
     
     chamado: Optional["Chamado"] = Relationship(
         sa_relationship=sa_relationship("Chamado", back_populates="atividades")
+    )
+    chamado_status: Optional["ChamadoStatus"] = Relationship(
+        sa_relationship=sa_relationship("ChamadoStatus")
     )
 
 class Expediente(SQLModel, table=True):

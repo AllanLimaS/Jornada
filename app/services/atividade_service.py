@@ -67,7 +67,7 @@ def get_atividades_by_status(session: Session, aba: str = "todos"):
         statement = statement.where(Atividade.portal_status == "pendente")
     elif aba == "lancados":
         statement = statement.where(Atividade.portal_status == "lancado")
-    statement = statement.order_by(Atividade.hora_inicio.desc())
+    statement = statement.order_by(Atividade.data_referencia.asc(), Atividade.hora_inicio.asc())
     return session.exec(statement).all()
 
 def get_atividades_by_chamado(session: Session, chamado_id: int, limit: int = 10):

@@ -30,7 +30,7 @@
             </div>
             <div class="timeline">
                 {% for atv in itens %}
-                <div class="timeline-item">
+                <div class="timeline-item" id="atividade-item-{{ atv.id }}">
                     <div class="timeline-time">
                         <div>{{ atv.data_referencia.strftime('%d/%m') }}</div>
                         <div>{{ atv.hora_inicio.strftime('%H:%M') }} - {{ atv.hora_fim.strftime('%H:%M') }}</div>
@@ -55,11 +55,19 @@
                                hx-target="#global-modal-body">Editar</a>
                         </div>
                         {% if atv.portal_status.value == 'pendente' and aba != 'lancados' %}
-                        <form hx-patch="/htmx/atividades/{{ atv.id }}/status" hx-target="#atividades-list" hx-swap="outerHTML">
+                        {% if atv.chamado_status_id %}
+                        <button class="btn btn-secondary text-sm" style="padding: 0.25rem 0.5rem;"
+                                hx-get="/htmx/atividades/{{ atv.id }}/lancar-modal?aba={{ aba }}" 
+                                hx-target="#global-modal-body">
+                            Marcar Lançado
+                        </button>
+                        {% else %}
+                        <form hx-patch="/htmx/atividades/{{ atv.id }}/status" hx-target="#atividade-item-{{ atv.id }}" hx-swap="delete">
                             <input type="hidden" name="status" value="lancado">
                             <input type="hidden" name="aba" value="{{ aba }}">
                             <button class="btn btn-secondary text-sm" style="padding: 0.25rem 0.5rem;">Marcar Lançado</button>
                         </form>
+                        {% endif %}
                         {% endif %}
                     </div>
                 </div>
@@ -101,11 +109,19 @@
 
                         <!-- Botão Marcar Lançado (Para abas pendente/todos) -->
                         {% if atv.portal_status.value == 'pendente' and aba != 'lancados' %}
+                        {% if atv.chamado_status_id %}
+                        <button class="btn btn-secondary text-sm" style="padding: 0.25rem 0.5rem;"
+                                hx-get="/htmx/atividades/{{ atv.id }}/lancar-modal?aba={{ aba }}" 
+                                hx-target="#global-modal-body">
+                            Marcar Lançado
+                        </button>
+                        {% else %}
                         <form hx-patch="/htmx/atividades/{{ atv.id }}/status" hx-target="#atividades-list" hx-swap="outerHTML">
                             <input type="hidden" name="status" value="lancado">
                             <input type="hidden" name="aba" value="{{ aba }}">
                             <button class="btn btn-secondary text-sm" style="padding: 0.25rem 0.5rem;">Marcar Lançado</button>
                         </form>
+                        {% endif %}
                         {% endif %}
                     </div>
                 </div>
@@ -119,3 +135,20 @@
         </div>
     {% endif %}
 </div>
+
+<script>
+function cleanUpEmptyGroups() {
+    document.querySelectorAll('.timeline-group-header').forEach(header => {
+        const timeline = header.nextElementSibling;
+        if (timeline && timeline.classList.contains('timeline')) {
+            if (timeline.querySelectorAll('.timeline-item').length === 0) {
+                header.style.display = 'none';
+                timeline.style.display = 'none';
+            }
+        }
+    });
+}
+document.body.addEventListener('htmx:afterOnLoad', function(evt) {
+    setTimeout(cleanUpEmptyGroups, 50);
+});
+</script>

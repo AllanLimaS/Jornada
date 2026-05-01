@@ -5,13 +5,7 @@
     <h2 class="text-xl font-semibold">Minhas Atividades</h2>
     
     <div class="tabs">
-        <button class="tab-item {% if not aba or aba == 'todos' %}active{% endif %}" 
-                hx-get="/htmx/atividades/lista?aba=todos" 
-                hx-target="#atividades-container"
-                hx-on:click="document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active')); this.classList.add('active');">
-            Todos
-        </button>
-        <button class="tab-item {% if aba == 'pendentes' %}active{% endif %}" 
+        <button class="tab-item {% if not aba or aba == 'pendentes' %}active{% endif %}" 
                 hx-get="/htmx/atividades/lista?aba=pendentes" 
                 hx-target="#atividades-container"
                 hx-on:click="document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active')); this.classList.add('active');">
@@ -23,11 +17,17 @@
                 hx-on:click="document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active')); this.classList.add('active');">
             Lançados
         </button>
+        <button class="tab-item {% if aba == 'todos' %}active{% endif %}" 
+                hx-get="/htmx/atividades/lista?aba=todos" 
+                hx-target="#atividades-container"
+                hx-on:click="document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active')); this.classList.add('active');">
+            Todos
+        </button>
     </div>
 </div>
 
 <div class="card">
-    <div id="atividades-container" hx-get="/htmx/atividades/lista?aba=todos" hx-trigger="load">
+    <div id="atividades-container" hx-get="/htmx/atividades/lista?aba=pendentes" hx-trigger="load">
         <div class="empty-state">
             Carregando atividades...
         </div>
