@@ -33,7 +33,6 @@
                 <input type="hidden" name="data_inicio" value="{{ data_inicio }}">
                 <input type="hidden" name="data_fim" value="{{ data_fim }}">
                 <textarea name="conteudo_markdown" id="real-markdown-input" style="display: none;"></textarea>
-                <textarea id="initial-markdown-data" style="display: none;">{{ conteudo_markdown }}</textarea>
                 <button type="submit" class="btn btn-primary">
                     Salvar Sprint
                 </button>
@@ -56,7 +55,7 @@
     .sprint-editor-header {
         background: var(--bg-card);
         border-bottom: 1px solid var(--border-color);
-        padding: 1rem 1.5rem;
+        padding: 1rem 2rem; /* Alinhado à margem do restante do sistema */
         display: flex;
         justify-content: space-between;
         align-items: center;
@@ -78,16 +77,43 @@
     .vditor-content, .vditor-ir, .vditor-textarea {
         background-color: transparent !important;
     }
+    
+    /* Configuração de tipografia e espaçamento para o Vditor */
     .vditor-reset {
         background-color: transparent !important;
         color: var(--text-main) !important;
-        padding: 2rem 4rem !important;
+        padding: 2rem !important; /* Margem padrão da tela de 2rem */
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+        font-size: 14px !important;
+        line-height: 1.6 !important;
     }
-    .vditor-reset h1, .vditor-reset h2, .vditor-reset h3 {
+
+    /* Restaura margens para parágrafos para que quebras de linha e parágrafos sejam visíveis */
+    .vditor-reset p, .vditor-ir p {
+        margin-top: 0 !important;
+        margin-bottom: 1.25rem !important; /* Margem inferior para dar visual de quebra de linha/parágrafo */
+    }
+
+    /* Ajusta listas */
+    .vditor-reset ul, .vditor-ir ul, .vditor-reset ol, .vditor-ir ol {
+        margin-top: 0 !important;
+        margin-bottom: 1.25rem !important;
+        padding-left: 1.5rem !important;
+    }
+
+    .vditor-reset li, .vditor-ir li {
+        margin-bottom: 0.25rem !important;
+    }
+
+    /* Configuração consistente de cabeçalhos no editor */
+    .vditor-reset h1, .vditor-reset h2, .vditor-reset h3, .vditor-reset h4, .vditor-reset h5, .vditor-reset h6 {
+        color: var(--text-main) !important;
         border-bottom: none !important;
-        margin-bottom: 0.5rem !important;
+        margin-top: 1.5rem !important;
+        margin-bottom: 0.75rem !important;
         padding-bottom: 0 !important;
     }
+
     .vditor-ir__marker, .vditor-ir__marker--heading, .vditor-ir__node::before {
         display: none !important;
     }
@@ -113,7 +139,16 @@
 <script>
     (function() {
         const getMode = () => document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'classic';
-        const initialValue = document.getElementById('initial-markdown-data').value;
+        
+        // Pré-processamento: substitui linhas vazias consecutivas por \u00A0 separadas por \n\n para preservar espaçamento no Vditor
+        let initialValue = {{ conteudo_markdown | tojson | safe }};
+        if (initialValue) {
+            initialValue = initialValue.replace(/\r\n/g, '\n');
+            initialValue = initialValue.replace(/\n{3,}/g, match => {
+                const M = match.length;
+                return "\n\n" + "\u00A0\n\n".repeat(M - 2);
+            });
+        }
 
         window.vditor = new Vditor('vditor-container', {
             height: '100%',
@@ -151,14 +186,21 @@
         observer.observe(document.documentElement, { attributes: true });
     })();
 
+    // Helper para limpar caracteres de controle de espaçamento antes de salvar ou copiar
+    function cleanMarkdownForOutput(markdown) {
+        if (!markdown) return '';
+        // Normaliza quebras de linha do Windows e converte linhas de \u00A0 em linhas vazias limpas
+        return markdown.replace(/\r\n/g, '\n').replace(/\n[ \t]*\u00A0[ \t]*\n/g, '\n');
+    }
+
     function syncVditorToForm() {
         const markdown = window.vditor.getValue();
-        document.getElementById('real-markdown-input').value = markdown;
+        document.getElementById('real-markdown-input').value = cleanMarkdownForOutput(markdown);
     }
 
     function copyMarkdownFromVditor() {
         const markdown = window.vditor.getValue();
-        navigator.clipboard.writeText(markdown).then(() => {
+        navigator.clipboard.writeText(cleanMarkdownForOutput(markdown)).then(() => {
             const toast = document.getElementById('copy-toast');
             toast.style.opacity = '1';
             setTimeout(() => toast.style.opacity = '0', 2000);

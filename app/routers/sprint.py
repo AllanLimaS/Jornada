@@ -20,10 +20,20 @@ def htmx_sprint_list(request: Request, session: Session = Depends(get_session)):
     )
 
 @router.get("/new")
-def htmx_sprint_new(request: Request):
+def htmx_sprint_new(request: Request, session: Session = Depends(get_session)):
+    latest_sprint = sprint_service.get_latest_sprint(session)
+    if latest_sprint:
+        data_inicio = latest_sprint.data_fim.strftime("%Y-%m-%d")
+    else:
+        data_inicio = date.today().strftime("%Y-%m-%d")
+
     return templates.TemplateResponse(
         "partials/sprint_create_modal.html",
-        {"request": request, "hoje_date": date.today().strftime("%Y-%m-%d")}
+        {
+            "request": request,
+            "data_inicio_default": data_inicio,
+            "hoje_date": date.today().strftime("%Y-%m-%d")
+        }
     )
 
 @router.post("/generate")
@@ -34,7 +44,7 @@ def htmx_sprint_generate(
     incluir_horas: bool = Form(False),
     session: Session = Depends(get_session)
 ):
-    nome = f"Sprint {data_inicio.strftime('%d/%m/%Y')}"
+    nome = sprint_service.get_next_sprint_name(session, data_fim)
     conteudo = sprint_service.generate_markdown_template(session, data_inicio, data_fim, incluir_horas)
     
     return templates.TemplateResponse(

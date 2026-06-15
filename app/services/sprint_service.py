@@ -95,6 +95,30 @@ def format_minutos_to_horas(minutos: int) -> str:
     restante = minutos % 60
     return f"{horas}h {restante:02d}m"
 
+def get_latest_sprint(session: Session) -> Optional[Sprint]:
+    return session.exec(select(Sprint).order_by(Sprint.data_fim.desc())).first()
+
+def get_next_sprint_name(session: Session, data_fim: date) -> str:
+    sprint_count = session.scalar(select(func.count(Sprint.id))) or 0
+    sprint_number = sprint_count + 1
+    
+    meses_pt = {
+        1: "Janeiro",
+        2: "Fevereiro",
+        3: "Março",
+        4: "Abril",
+        5: "Maio",
+        6: "Junho",
+        7: "Julho",
+        8: "Agosto",
+        9: "Setembro",
+        10: "Outubro",
+        11: "Novembro",
+        12: "Dezembro"
+    }
+    mes_nome = meses_pt.get(data_fim.month, "")
+    return f"Sprint #{sprint_number} - {mes_nome}"
+
 # CRUD Operations
 def create_sprint(session: Session, sprint_data: SprintCreate) -> Sprint:
     db_sprint = Sprint.model_validate(sprint_data)
