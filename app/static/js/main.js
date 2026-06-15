@@ -78,6 +78,13 @@ document.addEventListener('DOMContentLoaded', () => {
       const titulo = pickerItem.dataset.titulo;
       selectChamado(id, numero, titulo);
     }
+
+    // Botão Copiar Atividade (Delegado)
+    const copyBtn = e.target.closest('.copy-btn');
+    if (copyBtn) {
+      e.preventDefault();
+      handleCopyToClipboard(copyBtn);
+    }
   });
 
   // HTMX Helper: Reset form target after successful submit
@@ -480,4 +487,60 @@ function clearChamado() {
     display.className = 'chamado-picker-placeholder';
     display.textContent = 'Selecionar chamado...';
   }
+}
+
+// Copiar para a área de transferência de forma robusta e com feedback visual
+function handleCopyToClipboard(button) {
+  const text = button.getAttribute('data-clipboard-text');
+  if (!text) return;
+
+  const svg = button.querySelector('svg');
+  if (!svg) return;
+
+  // Guarda o SVG original para restaurar depois
+  if (!button.dataset.originalSvg) {
+    button.dataset.originalSvg = svg.innerHTML;
+  }
+
+  const performCopy = () => {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    } else {
+      // Fallback para contextos não seguros (sem HTTPS ou localhost)
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-999999px";
+      textArea.style.top = "-999999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        return Promise.resolve();
+      } catch (err) {
+        document.body.removeChild(textArea);
+        return Promise.reject(err);
+      }
+    }
+  };
+
+  performCopy().then(() => {
+    // Feedback visual: ícone de checkmark
+    svg.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+    button.classList.add('copied');
+
+    if (button.copyTimeout) {
+      clearTimeout(button.copyTimeout);
+    }
+
+    button.copyTimeout = setTimeout(() => {
+      svg.innerHTML = button.dataset.originalSvg;
+      button.classList.remove('copied');
+      button.copyTimeout = null;
+    }, 1000);
+  }).catch(err => {
+    console.error('Erro ao copiar para a área de transferência: ', err);
+  });
 }
