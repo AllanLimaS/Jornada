@@ -1,3 +1,6 @@
+import os
+import threading
+import time
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
@@ -36,3 +39,12 @@ app.include_router(pages.router)
 @app.get("/api/health")
 def health_check():
     return {"status": "ok"}
+
+@app.post("/api/shutdown")
+def shutdown():
+    """Encerra o servidor. Usado pelo botao 'Encerrar' do app."""
+    def _stop():
+        time.sleep(0.5)  # da tempo da resposta HTTP ser enviada
+        os._exit(0)
+    threading.Thread(target=_stop, daemon=True).start()
+    return {"status": "shutting_down"}

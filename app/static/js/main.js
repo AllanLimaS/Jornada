@@ -46,6 +46,21 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    // Encerrar servidor
+    if (e.target.closest('#shutdown-btn')) {
+      if (confirm('Encerrar o servidor do Jornada? A janela vai fechar.')) {
+        fetch('/api/shutdown', { method: 'POST' })
+          .catch(() => {})  // a conexao cai quando o processo morre; ignora
+          .finally(() => {
+            document.documentElement.innerHTML =
+              '<body style="display:flex;align-items:center;justify-content:center;height:100vh;margin:0;font-family:Inter,sans-serif;color:#64748b;background:#f8fafc">' +
+              '<div style="text-align:center"><h2 style="margin:0 0 .5rem">Jornada encerrado</h2>' +
+              '<p style="margin:0">Pode fechar esta janela.</p></div></body>';
+            setTimeout(() => { window.close(); }, 800);
+          });
+      }
+    }
+
     // Chamado Picker — abrir
     if (e.target.closest('#chamado-picker-trigger')) {
       openChamadoPicker();

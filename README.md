@@ -52,6 +52,21 @@ uvicorn main:app --reload --port 7734
 
 O banco de dados `jornada.db` é criado automaticamente na primeira execução.
 
+## Modo aplicativo (Windows)
+
+Para usar o Jornada como um "app" no Windows (janela sem barra de endereço, ícone próprio na barra de tarefas), sem digitar comandos:
+
+1. Rode **`Instalar Atalho.bat`** (duplo-clique) uma vez — cria o atalho **Jornada** na Área de Trabalho.
+2. Dê duplo-clique no atalho **Jornada**. Ele:
+   - cria o ambiente virtual e instala as dependências na primeira vez (pode demorar);
+   - sobe o servidor em segundo plano (sem janela de console);
+   - abre a aplicação em modo app (Chrome ou Edge; senão, o navegador padrão).
+3. Para fixar na barra de tarefas: clique-direito no atalho → *Mostrar mais opções* → *Fixar na barra de tarefas*.
+
+Para **encerrar o servidor**, use o botão de energia (⏻) no rodapé da barra lateral, dentro do próprio app.
+
+> Pré-requisito: ter o **Python 3** instalado e no PATH. Tudo é resolvido a partir da pasta do repositório, então funciona em qualquer PC que clonar o projeto.
+
 ## Acesso
 
 - **Aplicação:** http://127.0.0.1:7734
