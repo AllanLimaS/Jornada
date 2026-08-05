@@ -59,3 +59,4 @@ run.bat
 2. **HTMX Primeiro:** Se precisar adicionar interatividade no front, prefira HTMX retornando um partial em vez de escrever JavaScript personalizado.
 3. **Validação:** Sempre utilize os schemas em `app/schemas.py` para dados vindos do cliente.
 4. **Surgical Edits:** Ao modificar modelos, lembre-se de atualizar os schemas correspondentes.
+5. **Navegação e Testes Web via Orca CLI:** Sempre que solicitado testar ou validar aplicações web no navegador, utilize o executável do `orca-cli` (`C:\Users\allan\AppData\Local\Programs\orca\resources\bin\orca.cmd`) para controlar e inspecionar a aba ativa no Orca (`orca goto`, `orca eval`, `orca snapshot`, `orca click`).
