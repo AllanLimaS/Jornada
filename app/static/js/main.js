@@ -152,6 +152,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // Inicializar datepickers no formulário (Flatpickr)
   const initFormDatepickers = (container = document) => {
     container.querySelectorAll('.js-datepicker').forEach(el => {
+      if (!el || !el.parentNode) return;
       flatpickr(el, {
         dateFormat: "Y-m-d",
         altInput: true,
@@ -227,7 +228,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (target.querySelector('.js-chamado-form')) {
        restoreChamadoDraft(target.querySelector('.js-chamado-form'));
     }
+
+    // Inline Calendar Re-initialization (para navegação via HTMX/SPA)
+    if (document.getElementById('inline-calendar')) {
+      setTimeout(initInlineCalendar, 20);
+    } else if (currentCalendarFp && document.body.contains(currentCalendarFp.calendarContainer)) {
+      updateCalendarTooltips(currentCalendarFp);
+    }
   });
+
+  // Executa inicialização no carregamento inicial da página
+  if (document.getElementById('inline-calendar')) {
+    setTimeout(initInlineCalendar, 20);
+  }
 
   // Feedback visual do expediente
   document.body.addEventListener('showExpedienteFeedback', function() {
@@ -559,3 +572,204 @@ function handleCopyToClipboard(button) {
     console.error('Erro ao copiar para a área de transferência: ', err);
   });
 }
+
+// =============================================================================
+// Calendário & Tooltips Globais (Navegação SPA/HTMX)
+// =============================================================================
+
+let currentCalendarFp = null;
+
+async function updateCalendarTooltips(fp) {
+  if (!fp || !fp.calendarContainer || !document.body.contains(fp.calendarContainer)) return;
+  currentCalendarFp = fp;
+  
+  const year = fp.currentYear;
+  const month = fp.currentMonth + 1;
+  
+  try {
+    const res = await fetch(`/api/v1/atividades/resumo-calendario?year=${year}&month=${month}`);
+    if (!res.ok) return;
+    const stats = await res.json();
+    
+    const dayElems = fp.calendarContainer.querySelectorAll('.flatpickr-day');
+    dayElems.forEach(dayElem => {
+      if (!dayElem.dateObj) return;
+      
+      const d = dayElem.dateObj;
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const dayStr = String(d.getDate()).padStart(2, '0');
+      const dateKey = `${y}-${m}-${dayStr}`;
+      
+      const dayData = stats[dateKey];
+      let tooltipText = "";
+      let tooltipHtml = "";
+      if (dayData && dayData.total_atividades > 0) {
+        const totalMins = dayData.minutos || 0;
+        const h = Math.floor(totalMins / 60);
+        const minRem = totalMins % 60;
+        
+        let horasStr = "";
+        if (h > 0 && minRem > 0) {
+          horasStr = `${h}h ${minRem}m`;
+        } else if (h > 0) {
+          horasStr = `${h}h`;
+        } else {
+          horasStr = `${minRem}m`;
+        }
+        
+        const atvStr = dayData.total_atividades === 1 ? "1 atividade" : `${dayData.total_atividades} atividades`;
+        
+        let statusBadge = "";
+        if (dayData.nao_lancadas > 0) {
+          const naoLancStr = dayData.nao_lancadas === 1 ? "1 pendente" : `${dayData.nao_lancadas} pendentes`;
+          statusBadge = `<span class="tooltip-badge tooltip-badge-warning">${naoLancStr}</span>`;
+        } else {
+          statusBadge = `<span class="tooltip-badge tooltip-badge-success">Lançado</span>`;
+        }
+        
+        tooltipHtml = `
+          <div class="tooltip-header">
+            <span class="tooltip-time">⏱️ ${horasStr}</span>
+            <span class="tooltip-count">• ${atvStr}</span>
+          </div>
+          <div class="tooltip-footer">
+            ${statusBadge}
+          </div>
+        `;
+        tooltipText = `${horasStr}, ${atvStr}`;
+      } else {
+        tooltipHtml = `<div class="tooltip-empty">Sem atividades</div>`;
+        tooltipText = "0h, 0 atividades";
+      }
+      
+      dayElem.setAttribute('data-tooltip-html', tooltipHtml);
+      dayElem.setAttribute('data-tooltip', tooltipText);
+      dayElem.setAttribute('title', tooltipText);
+
+      // Fundo colorido do dia de acordo com o status dos lançamentos
+      dayElem.classList.remove('day-status-pending', 'day-status-launched');
+      if (dayData && dayData.total_atividades > 0) {
+        if (dayData.nao_lancadas > 0) {
+          dayElem.classList.add('day-status-pending');
+        } else {
+          dayElem.classList.add('day-status-launched');
+        }
+      }
+    });
+  } catch(e) {
+    console.error("Erro ao carregar tooltips do calendário:", e);
+  }
+}
+
+function refreshExpediente(dateStr) {
+  if (window.htmx && document.getElementById('expediente-container')) {
+    htmx.ajax('GET', '/htmx/expediente', {
+      values: { data_ref: dateStr },
+      target: '#expediente-container'
+    });
+  }
+}
+
+function initInlineCalendar() {
+  const input = document.getElementById("inline-calendar");
+  if (!input || !input.parentNode) return;
+
+  if (input._flatpickr && input._flatpickr.calendarContainer && document.body.contains(input._flatpickr.calendarContainer)) {
+    updateCalendarTooltips(input._flatpickr);
+    return;
+  }
+
+  const defaultDateVal = input.value || "today";
+
+  const fp = flatpickr(input, {
+    inline: true,
+    locale: "pt",
+    defaultDate: defaultDateVal,
+    onReady: function(selectedDates, dateStr, instance) {
+      let currentVal = input.value;
+      if (!currentVal && selectedDates.length > 0) {
+        currentVal = instance.formatDate(selectedDates[0], "Y-m-d");
+        input.value = currentVal;
+      }
+      if (currentVal && window.htmx) {
+        htmx.ajax('GET', '/htmx/atividades/calendario', {
+          values: { data_ref: currentVal },
+          target: '#timeline-list'
+        });
+        refreshExpediente(currentVal);
+      }
+      updateCalendarTooltips(instance);
+    },
+    onChange: function(selectedDates, dateStr, instance) {
+      input.value = dateStr;
+      if (window.htmx) {
+        htmx.ajax('GET', '/htmx/atividades/calendario', {
+          values: { data_ref: dateStr },
+          target: '#timeline-list'
+        });
+        refreshExpediente(dateStr);
+      }
+    },
+    onMonthChange: function(selectedDates, dateStr, instance) {
+      updateCalendarTooltips(instance);
+    },
+    onYearChange: function(selectedDates, dateStr, instance) {
+      updateCalendarTooltips(instance);
+    }
+  });
+
+  currentCalendarFp = fp;
+}
+
+window.initInlineCalendar = initInlineCalendar;
+window.refreshExpediente = refreshExpediente;
+
+// Visual Tooltip popup element & position handler
+let calendarTooltipEl = null;
+
+function getOrCreateCalendarTooltip() {
+  if (!calendarTooltipEl) {
+    calendarTooltipEl = document.createElement('div');
+    calendarTooltipEl.className = 'calendar-day-tooltip';
+    document.body.appendChild(calendarTooltipEl);
+  }
+  return calendarTooltipEl;
+}
+
+document.addEventListener('mouseover', function(e) {
+  const dayElem = e.target.closest('.flatpickr-day');
+  if (dayElem && (dayElem.hasAttribute('data-tooltip-html') || dayElem.hasAttribute('data-tooltip'))) {
+    const html = dayElem.getAttribute('data-tooltip-html') || dayElem.getAttribute('data-tooltip');
+    if (!html) return;
+    
+    const tooltip = getOrCreateCalendarTooltip();
+    tooltip.innerHTML = html;
+    tooltip.style.display = 'block';
+    
+    const rect = dayElem.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    
+    let left = rect.left + (rect.width / 2) - (tooltipRect.width / 2);
+    let top = rect.top - tooltipRect.height - 8;
+    
+    if (left < 10) left = 10;
+    if (left + tooltipRect.width > window.innerWidth - 10) {
+      left = window.innerWidth - tooltipRect.width - 10;
+    }
+    if (top < 10) {
+      top = rect.bottom + 8;
+    }
+    
+    tooltip.style.left = `${left + window.scrollX}px`;
+    tooltip.style.top = `${top + window.scrollY}px`;
+  }
+});
+
+document.addEventListener('mouseout', function(e) {
+  const dayElem = e.target.closest('.flatpickr-day');
+  if (dayElem && calendarTooltipEl) {
+    calendarTooltipEl.style.display = 'none';
+  }
+});
+

@@ -43,7 +43,20 @@
                     
                     <div class="timeline-card-meta">
                         <span class="timeline-status-dot"></span>
-                        <span>{{ atv.hora_inicio.strftime('%H:%M') if atv.hora_inicio else '--:--' }} - {{ atv.hora_fim.strftime('%H:%M') if atv.hora_fim else '--:--' }}</span>
+                        <span>
+                            {{ atv.hora_inicio.strftime('%H:%M') if atv.hora_inicio else '--:--' }} - {{ atv.hora_fim.strftime('%H:%M') if atv.hora_fim else '--:--' }}
+                            {% if atv.duracao_minutos is not none %}
+                                {% set d_h = atv.duracao_minutos // 60 %}
+                                {% set d_m = atv.duracao_minutos % 60 %}
+                                {% if d_h > 0 and d_m > 0 %}
+                                    ({{ d_h }}h {{ d_m }}m)
+                                {% elif d_h > 0 %}
+                                    ({{ d_h }}h)
+                                {% else %}
+                                    ({{ d_m }} min)
+                                {% endif %}
+                            {% endif %}
+                        </span>
                         {% if atv.chamado_id %}
                             {% set ch = chamados_map.get(atv.chamado_id) if chamados_map else None %}
                             <span>•</span>

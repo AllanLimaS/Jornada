@@ -85,3 +85,32 @@ def delete_atividade(session: Session, atividade_id: int):
     session.delete(atividade)
     session.commit()
     return {"ok": True}
+
+def get_resumo_atividades_por_periodo(session: Session, start_date: date, end_date: date) -> dict:
+    """
+    Retorna dicionário agrupado por data (YYYY-MM-DD) com resumo de atividades (minutos, total, não lançadas).
+    """
+    from app.models import AtividadePortalStatus
+    statement = (
+        select(Atividade)
+        .where(Atividade.data_referencia >= start_date)
+        .where(Atividade.data_referencia <= end_date)
+    )
+    atividades = session.exec(statement).all()
+    
+    resumo = {}
+    for atv in atividades:
+        d_str = atv.data_referencia.strftime("%Y-%m-%d")
+        if d_str not in resumo:
+            resumo[d_str] = {
+                "minutos": 0,
+                "total_atividades": 0,
+                "nao_lancadas": 0
+            }
+        resumo[d_str]["minutos"] += (atv.duracao_minutos or 0)
+        resumo[d_str]["total_atividades"] += 1
+        if atv.portal_status == AtividadePortalStatus.PENDENTE or atv.portal_status == "pendente":
+            resumo[d_str]["nao_lancadas"] += 1
+            
+    return resumo
+

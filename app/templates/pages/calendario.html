@@ -23,37 +23,9 @@
             </div>
             
             <script>
-                function refreshExpediente(dateStr) {
-                    if (window.htmx) {
-                        htmx.ajax('GET', '/htmx/expediente', {
-                            values: { data_ref: dateStr },
-                            target: '#expediente-container'
-                        });
-                    }
+                if (typeof initInlineCalendar === 'function') {
+                    setTimeout(initInlineCalendar, 20);
                 }
-
-                // Inicializamos diretamente (com pequeno delay pra garantir renderização)
-                setTimeout(function(){
-                    flatpickr("#inline-calendar", {
-                        inline: true,
-                        locale: "pt",
-                        defaultDate: "today",
-                        onReady: function(selectedDates, dateStr, instance) {
-                            // Ao carregar, dispara o evento manual para carregar atividades de hoje
-                            const input = document.getElementById("inline-calendar");
-                            if (input && input.value) {
-                                input.dispatchEvent(new Event('change', { bubbles: true }));
-                                refreshExpediente(input.value);
-                            }
-                        },
-                        onChange: function(selectedDates, dateStr, instance) {
-                            const input = document.getElementById("inline-calendar");
-                            input.value = dateStr;
-                            input.dispatchEvent(new Event('change', { bubbles: true }));
-                            refreshExpediente(dateStr);
-                        }
-                    });
-                }, 50);
             </script>
             
             <p class="text-sm text-muted mt-4">

@@ -838,6 +838,35 @@ select.form-control {
   border-radius: 8px !important;
 }
 
+/* Indicadores de fundo do calendário por status de atividade (ultra-transparentes / sem borda) */
+.flatpickr-day.day-status-launched {
+  background-color: rgba(34, 197, 94, 0.05) !important;
+  border-color: transparent !important;
+  color: var(--text-main) !important;
+  font-weight: 500 !important;
+}
+
+.flatpickr-day.day-status-pending {
+  background-color: rgba(245, 158, 11, 0.05) !important;
+  border-color: transparent !important;
+  color: var(--text-main) !important;
+  font-weight: 500 !important;
+}
+
+[data-theme="dark"] .flatpickr-day.day-status-launched {
+  background-color: rgba(34, 197, 94, 0.06) !important;
+  border-color: transparent !important;
+  color: var(--text-main) !important;
+  font-weight: 500 !important;
+}
+
+[data-theme="dark"] .flatpickr-day.day-status-pending {
+  background-color: rgba(245, 158, 11, 0.06) !important;
+  border-color: transparent !important;
+  color: var(--text-main) !important;
+  font-weight: 500 !important;
+}
+
 .flatpickr-day:hover {
   background-color: var(--bg-surface-hover) !important;
   border-color: var(--border-color) !important;
@@ -849,7 +878,9 @@ select.form-control {
   font-weight: 700 !important;
 }
 
-.flatpickr-day.selected, .flatpickr-day.selected:hover {
+.flatpickr-day.selected, .flatpickr-day.selected:hover,
+.flatpickr-day.selected.day-status-launched,
+.flatpickr-day.selected.day-status-pending {
   background-color: var(--accent-color) !important;
   border-color: var(--accent-color) !important;
   color: #fff !important;
@@ -899,3 +930,102 @@ select.form-control {
 .htmx-request.htmx-indicator {
     opacity: 1;
 }
+
+/* Tooltip Customizado do Calendário */
+.calendar-day-tooltip {
+    position: absolute;
+    z-index: 10000;
+    background: rgba(30, 41, 59, 0.94);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: #f8fafc;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    padding: 7px 11px;
+    border-radius: 10px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+    pointer-events: none;
+    display: none;
+    white-space: nowrap;
+    animation: tooltipFadeIn 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="light"] .calendar-day-tooltip {
+    background: rgba(255, 255, 255, 0.95);
+    color: #0f172a;
+    border: 1px solid rgba(226, 232, 240, 0.9);
+    box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.12), 0 4px 6px -2px rgba(15, 23, 42, 0.05);
+}
+
+.calendar-day-tooltip .tooltip-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.calendar-day-tooltip .tooltip-time {
+    font-weight: 700;
+    color: #38bdf8;
+    font-size: 0.78rem;
+}
+[data-theme="light"] .calendar-day-tooltip .tooltip-time {
+    color: #0284c7;
+}
+
+.calendar-day-tooltip .tooltip-count {
+    color: #94a3b8;
+    font-size: 0.73rem;
+}
+[data-theme="light"] .calendar-day-tooltip .tooltip-count {
+    color: #64748b;
+}
+
+.calendar-day-tooltip .tooltip-footer {
+    margin-top: 3px;
+    display: flex;
+    align-items: center;
+}
+
+.calendar-day-tooltip .tooltip-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.calendar-day-tooltip .tooltip-badge-warning {
+    background: rgba(245, 158, 11, 0.18);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.3);
+}
+[data-theme="light"] .calendar-day-tooltip .tooltip-badge-warning {
+    background: #fef3c7;
+    color: #d97706;
+    border: 1px solid #fde68a;
+}
+
+.calendar-day-tooltip .tooltip-badge-success {
+    background: rgba(16, 185, 129, 0.18);
+    color: #34d399;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+[data-theme="light"] .calendar-day-tooltip .tooltip-badge-success {
+    background: #d1fae5;
+    color: #059669;
+    border: 1px solid #a7f3d0;
+}
+
+.calendar-day-tooltip .tooltip-empty {
+    color: #94a3b8;
+    font-style: italic;
+    font-size: 0.72rem;
+}
+
+@keyframes tooltipFadeIn {
+    from { opacity: 0; transform: translateY(4px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+

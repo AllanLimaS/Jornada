@@ -28,6 +28,7 @@ def page_hoje(request: Request):
         }
     )
 
+@router.get("/atividades")
 @router.get("/atividades-lista")
 def page_atividades_lista(request: Request):
     """Página de listagem histórica de atividades (antigos acompanhamentos)."""
@@ -49,7 +50,8 @@ def page_calendario(request: Request):
         context={
             "title": "Jornada - Calendário",
             "page_title": "Calendário",
-            "active_page": "calendario"
+            "active_page": "calendario",
+            "data_atual": date_type.today().strftime("%Y-%m-%d")
         }
     )
 
@@ -60,6 +62,26 @@ def page_calendario(request: Request):
 @router.post("/api/v1/atividades/", response_model=schemas.AtividadeRead)
 def api_create_atividade(atividade: schemas.AtividadeCreate, session: Session = Depends(get_session)):
     return atividade_service.create_atividade(session, atividade)
+
+@router.get("/api/v1/atividades/resumo-calendario")
+def api_resumo_calendario(
+    year: int,
+    month: int,
+    session: Session = Depends(get_session)
+):
+    """
+    Retorna o resumo de atividades por dia para o mês visualizado no calendário.
+    """
+    import calendar
+    from datetime import timedelta
+    first_day = date_type(year, month, 1)
+    last_day_num = calendar.monthrange(year, month)[1]
+    last_day = date_type(year, month, last_day_num)
+    
+    start_date = first_day - timedelta(days=7)
+    end_date = last_day + timedelta(days=7)
+    
+    return atividade_service.get_resumo_atividades_por_periodo(session, start_date, end_date)
 
 @router.get("/api/v1/atividades/{data_ref}", response_model=List[schemas.AtividadeRead])
 def api_list_atividades_by_date(data_ref: date_type, session: Session = Depends(get_session)):
