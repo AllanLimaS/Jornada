@@ -1,3 +1,24 @@
+// Global Sidebar Functions (Available immediately)
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  if (sb) {
+    sb.classList.toggle('collapsed');
+    const isCollapsed = sb.classList.contains('collapsed');
+    localStorage.setItem('sidebar-collapsed', isCollapsed ? 'true' : 'false');
+  }
+}
+window.toggleSidebar = toggleSidebar;
+
+// Auto-restore sidebar state immediately on script load
+(function() {
+  if (localStorage.getItem('sidebar-collapsed') === 'true') {
+    document.addEventListener('DOMContentLoaded', () => {
+      const sb = document.querySelector('.sidebar');
+      if (sb) sb.classList.add('collapsed');
+    });
+  }
+})();
+
 document.addEventListener('DOMContentLoaded', () => {
   const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
 
@@ -27,6 +48,11 @@ document.addEventListener('DOMContentLoaded', () => {
     updateFlatpickrTheme("dark");
   } else {
     updateFlatpickrTheme("light");
+  }
+
+  const sidebar = document.querySelector('.sidebar');
+  if (sidebar && localStorage.getItem('sidebar-collapsed') === 'true') {
+    sidebar.classList.add('collapsed');
   }
 
   // Event delegation to survive HTMX DOM swaps

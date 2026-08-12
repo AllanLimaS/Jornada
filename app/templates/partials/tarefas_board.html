@@ -1,0 +1,188 @@
+<div class="kanban-board">
+    
+    <!-- COLUNA: A FAZER -->
+    <div class="kanban-col">
+        <div class="col-header">
+            <span>A Fazer</span>
+            <span class="count-badge">{{ board.a_fazer | length }}</span>
+        </div>
+        
+        {% if not board.a_fazer %}
+            <div class="text-center text-muted p-4" style="font-size: 0.85rem; border: 1px dashed var(--border-color); border-radius: var(--radius);">
+                Nenhuma tarefa a fazer
+            </div>
+        {% endif %}
+
+        {% for t in board.a_fazer %}
+        <div class="kanban-card" 
+             hx-get="/htmx/tarefas/{{ t.id }}/modal" 
+             hx-target="#global-modal-body" 
+             onclick="document.getElementById('global-modal').classList.add('active')">
+            <div class="card-title">{{ t.titulo }}</div>
+            {% if t.descricao %}
+                <div class="card-desc">{{ t.descricao }}</div>
+            {% endif %}
+            <div class="card-footer">
+                {% if t.chamado %}
+                    <span class="ticket-badge">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5v14M9 5v14M4 11h16M4 17h16M4 5h16"/></svg>
+                        #{{ t.chamado.numero }}
+                    </span>
+                {% else %}
+                    <span style="color:var(--text-muted); font-size:0.75rem;">Sem chamado</span>
+                {% endif %}
+
+                {% if t.data_prazo %}
+                    {% if t.data_prazo < today %}
+                        <span class="deadline-tag urgent">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            {{ t.data_prazo.strftime('%d/%b') }} (Atrasada)
+                        </span>
+                    {% elif t.data_prazo == today %}
+                        <span class="deadline-tag urgent">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            Hoje
+                        </span>
+                    {% else %}
+                        <span class="deadline-tag">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            {{ t.data_prazo.strftime('%d/%b') }}
+                        </span>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- COLUNA: EM ANDAMENTO -->
+    <div class="kanban-col">
+        <div class="col-header">
+            <span>Em Andamento</span>
+            <span class="count-badge">{{ board.em_andamento | length }}</span>
+        </div>
+
+        {% if not board.em_andamento %}
+            <div class="text-center text-muted p-4" style="font-size: 0.85rem; border: 1px dashed var(--border-color); border-radius: var(--radius);">
+                Nenhuma tarefa em andamento
+            </div>
+        {% endif %}
+
+        {% for t in board.em_andamento %}
+        <div class="kanban-card" style="border-left: 4px solid var(--accent-color);"
+             hx-get="/htmx/tarefas/{{ t.id }}/modal" 
+             hx-target="#global-modal-body" 
+             onclick="document.getElementById('global-modal').classList.add('active')">
+            <div class="card-title">{{ t.titulo }}</div>
+            {% if t.descricao %}
+                <div class="card-desc">{{ t.descricao }}</div>
+            {% endif %}
+            <div class="card-footer">
+                {% if t.chamado %}
+                    <span class="ticket-badge">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5v14M9 5v14M4 11h16M4 17h16M4 5h16"/></svg>
+                        #{{ t.chamado.numero }}
+                    </span>
+                {% else %}
+                    <span style="color:var(--text-muted); font-size:0.75rem;">Sem chamado</span>
+                {% endif %}
+
+                {% if t.data_prazo %}
+                    {% if t.data_prazo <= today %}
+                        <span class="deadline-tag urgent">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                            {{ 'Hoje' if t.data_prazo == today else t.data_prazo.strftime('%d/%b') }}
+                        </span>
+                    {% else %}
+                        <span class="deadline-tag warning">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                            {{ t.data_prazo.strftime('%d/%b') }}
+                        </span>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- COLUNA: CONCLUÍDO -->
+    <div class="kanban-col">
+        <div class="col-header">
+            <span>Concluído</span>
+            <span class="count-badge">{{ (board.concluido_recentes | length) + (board.concluido_anteriores | length) }}</span>
+        </div>
+
+        <!-- SEÇÃO A: CONCLUÍDO RECENTEMENTE -->
+        <div class="section-divider">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--status-done-text);"><polyline points="20 6 9 17 4 12"/></svg>
+            <span>Concluído recentemente</span>
+        </div>
+
+        {% if not board.concluido_recentes %}
+            <div class="text-center text-muted p-2" style="font-size: 0.8rem; font-style: italic;">
+                Nenhum nos últimos 7 dias
+            </div>
+        {% endif %}
+
+        {% for t in board.concluido_recentes %}
+        <div class="kanban-card card-done"
+             hx-get="/htmx/tarefas/{{ t.id }}/modal" 
+             hx-target="#global-modal-body" 
+             onclick="document.getElementById('global-modal').classList.add('active')">
+            <div class="card-title">{{ t.titulo }}</div>
+            <div class="card-footer">
+                {% if t.chamado %}
+                    <span class="ticket-badge">#{{ t.chamado.numero }}</span>
+                {% else %}
+                    <span style="color:var(--text-muted); font-size:0.75rem;">Geral</span>
+                {% endif %}
+                <span style="color:var(--status-done-text); font-size:0.8rem; font-weight:600;">
+                    Concluído {{ (t.data_conclusao or t.updated_at).strftime('%d/%b') }}
+                </span>
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- SEÇÃO B: TODOS OS ANTERIORES (MINIMIZADO POR PADRÃO) -->
+        <div class="section-divider" style="margin-top: 0.75rem;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--text-muted);"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+            <span>Todos os anteriores</span>
+        </div>
+
+        <details class="collapsible-section">
+            <summary>
+                <div class="summary-content">
+                    <span>Ver tarefas anteriores ({{ board.concluido_anteriores | length }})</span>
+                </div>
+                <svg class="chevron-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+            </summary>
+            <div class="collapsible-body">
+                {% if not board.concluido_anteriores %}
+                    <div class="text-center text-muted p-2" style="font-size: 0.8rem; font-style: italic;">
+                        Sem histórico anterior
+                    </div>
+                {% endif %}
+
+                {% for t in board.concluido_anteriores %}
+                <div class="kanban-card card-done"
+                     hx-get="/htmx/tarefas/{{ t.id }}/modal" 
+                     hx-target="#global-modal-body" 
+                     onclick="document.getElementById('global-modal').classList.add('active')">
+                    <div class="card-title">{{ t.titulo }}</div>
+                    <div class="card-footer">
+                        {% if t.chamado %}
+                            <span class="ticket-badge">#{{ t.chamado.numero }}</span>
+                        {% else %}
+                            <span style="color:var(--text-muted); font-size:0.75rem;">Geral</span>
+                        {% endif %}
+                        <span style="color:var(--text-muted); font-size:0.8rem;">
+                            {{ (t.data_conclusao or t.updated_at).strftime('%d/%b/%Y') }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </details>
+
+    </div>
+</div>

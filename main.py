@@ -10,7 +10,7 @@ from app.database import create_db_and_tables, engine
 # Importante importar os modelos aqui para que o create_all do metadata saiba sobre eles
 from app import models
 from app.seeds import init_seeds
-from app.routers import atividades, chamados, chamado_categorias, chamado_status, pages, expediente, sprint, configuracoes
+from app.routers import atividades, chamados, chamado_categorias, chamado_status, pages, expediente, sprint, configuracoes, tarefas
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,6 +34,7 @@ app.include_router(chamado_status.router)
 app.include_router(expediente.router)
 app.include_router(sprint.router)
 app.include_router(configuracoes.router)
+app.include_router(tarefas.router)
 app.include_router(pages.router)
 
 @app.get("/api/health")

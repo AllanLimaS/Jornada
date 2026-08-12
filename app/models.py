@@ -106,7 +106,38 @@ class Sprint(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
+class TarefaStatus(str, Enum):
+    A_FAZER = "a_fazer"
+    EM_ANDAMENTO = "em_andamento"
+    CONCLUIDO = "concluido"
+
+class TarefaPrioridade(str, Enum):
+    BAIXA = "baixa"
+    MEDIA = "media"
+    ALTA = "alta"
+    URGENTE = "urgente"
+
+class TarefaBase(SQLModel):
+    titulo: str
+    descricao: Optional[str] = Field(default=None)
+    status: TarefaStatus = Field(default=TarefaStatus.A_FAZER)
+    prioridade: TarefaPrioridade = Field(default=TarefaPrioridade.MEDIA)
+    data_prazo: Optional[date] = Field(default=None)
+    data_conclusao: Optional[datetime] = Field(default=None)
+    chamado_id: Optional[int] = Field(default=None, foreign_key="chamado.id")
+
+class Tarefa(TarefaBase, table=True):
+    __tablename__ = "tarefa"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    chamado: Optional["Chamado"] = Relationship(
+        sa_relationship=sa_relationship("Chamado")
+    )
+
 class Configuracao(SQLModel, table=True):
     __tablename__ = "configuracao"
     chave: str = Field(primary_key=True)
     valor: str
+

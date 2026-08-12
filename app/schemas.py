@@ -5,7 +5,8 @@ from datetime import date, time, datetime
 from typing import Optional
 from app.models import (
     ChamadoBase, AtividadeBase, ChamadoCategoriaBase, 
-    ChamadoStatusBase, AtividadePortalStatus
+    ChamadoStatusBase, AtividadePortalStatus,
+    TarefaBase, TarefaStatus, TarefaPrioridade
 )
 
 # --- Status de Chamado ---
@@ -103,3 +104,21 @@ class SprintUpdate(BaseModel):
     data_inicio: date | None = None
     data_fim: date | None = None
     conteudo_markdown: str | None = None
+
+# --- Tarefas ---
+class TarefaCreate(TarefaBase):
+    pass
+
+class TarefaRead(TarefaBase):
+    id: int
+    created_at: datetime
+    updated_at: datetime
+
+class TarefaUpdate(BaseModel):
+    titulo: str | None = Field(default=None)
+    descricao: str | None = Field(default=None)
+    status: TarefaStatus | None = Field(default=None)
+    prioridade: TarefaPrioridade | None = Field(default=None)
+    data_prazo: date | None = Field(default=None)
+    chamado_id: int | None = Field(default=None)
+

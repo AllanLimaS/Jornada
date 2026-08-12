@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-color);">
+            <rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="11" rx="1"/>
+        </svg>
+        <h2 class="text-xl font-semibold">Quadro de Tarefas</h2>
+        <div class="htmx-indicator" style="color: var(--accent-color); font-size: 0.8rem; font-weight: 500;">
+            <div style="display: flex; align-items: center; gap: 0.25rem;">
+                <svg class="spinner" width="16" height="16" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" stroke="currentColor"><style>.spinner{transform-origin:center;animation:spinner_rotate 2s linear infinite}@keyframes spinner_rotate{100%{transform:rotate(360deg)}}</style><path d="M12,1A11,11,0,1,0,23,12,11,11,0,0,0,12,1Zm0,19a8,8,0,1,1,8-8A8,8,0,0,1,12,20Z" opacity=".25"/><path d="M10.14,1.16a11,11,0,0,0-9,8.92A1.59,1.59,0,0,0,2.46,12,1.52,1.52,0,0,0,4.11,10.7a8,8,0,0,1,6.66-6.61A1.42,1.42,0,0,0,12,2.69h0A1.57,1.57,0,0,0,10.14,1.16Z"/></svg>
+                <span>Carregando...</span>
+            </div>
+        </div>
+    </div>
+    <button class="btn btn-primary" 
+            hx-get="/htmx/tarefas/form-new" 
+            hx-target="#global-modal-body" 
+            onclick="document.getElementById('global-modal').classList.add('active')">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:0.25rem"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+        Nova Tarefa
+    </button>
+</div>
+
+<!-- Container principal do Board Kanban (carregado via HTMX) -->
+<div id="tarefas-board-container" hx-get="/htmx/tarefas/board" hx-trigger="load">
+    <div class="empty-state">
+        <div class="spinner-sm mx-auto mb-4"></div>
+        <p class="text-muted">Carregando quadro de tarefas...</p>
+    </div>
+</div>
+
+<style>
+    .kanban-board {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        align-items: start;
+    }
+    .kanban-col {
+        background: var(--bg-surface-hover);
+        border-radius: var(--radius);
+        padding: 1rem;
+        border: 1px solid var(--border-color);
+        min-height: 550px;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    [data-theme="dark"] .kanban-col {
+        background: #121214;
+        border-color: #27272A;
+    }
+    [data-theme="dark"] .card-done {
+        background: #161619;
+    }
+    .col-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 0.75rem;
+        border-bottom: 2px solid var(--border-color);
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--text-main);
+    }
+    .count-badge {
+        background: var(--bg-surface);
+        color: var(--text-muted);
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.8rem;
+        border: 1px solid var(--border-color);
+        font-weight: 600;
+    }
+    .kanban-card {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        padding: 1rem;
+        box-shadow: var(--shadow-sm);
+        transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+        cursor: pointer;
+    }
+    .kanban-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+        border-color: var(--border-color-strong);
+    }
+    .card-title {
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: var(--text-main);
+        line-height: 1.4;
+        margin-bottom: 0.4rem;
+    }
+    .card-desc {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-bottom: 0.75rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+    .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.75rem;
+        padding-top: 0.5rem;
+        border-top: 1px solid var(--border-color);
+        font-size: 0.8rem;
+    }
+    .ticket-badge {
+        background: var(--accent-soft);
+        color: var(--accent-color);
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+    .deadline-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.8rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+    .deadline-tag.urgent {
+        color: var(--danger, #dc2626);
+        font-weight: 600;
+    }
+    .deadline-tag.warning {
+        color: #d97706;
+        font-weight: 600;
+    }
+    .section-divider {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        margin: 0.5rem 0 0.25rem 0;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .section-divider::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--border-color-strong);
+    }
+    details.collapsible-section {
+        width: 100%;
+        margin-top: 0.25rem;
+    }
+    details.collapsible-section summary {
+        list-style: none;
+        cursor: pointer;
+        padding: 0.6rem 0.75rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        border-radius: var(--radius);
+        border: 1px dashed var(--border-color-strong);
+        background: var(--bg-surface);
+        transition: all 0.15s;
+    }
+    details.collapsible-section summary:hover {
+        background: var(--bg-surface-hover);
+        color: var(--text-main);
+        border-style: solid;
+    }
+    details.collapsible-section summary::-webkit-details-marker { display: none; }
+    .summary-content { display: flex; align-items: center; gap: 0.5rem; }
+    .chevron-icon { transition: transform 0.2s ease; }
+    details[open] .chevron-icon { transform: rotate(180deg); }
+    .collapsible-body { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.75rem; }
+    .card-done { opacity: 0.85; background: var(--bg-surface-hover); }
+    .card-done .card-title { text-decoration: line-through; color: var(--text-muted); }
+</style>
+{% endblock %}

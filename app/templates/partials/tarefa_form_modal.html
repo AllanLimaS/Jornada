@@ -1,0 +1,133 @@
+<div style="padding: 0.5rem 0;">
+    <h3 style="font-size: 1.15rem; font-weight: 700; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem; color: var(--text-main);">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--accent-color);">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+        </svg>
+        {{ 'Editar Tarefa' if tarefa else 'Nova Tarefa' }}
+    </h3>
+
+    <form {% if tarefa %}
+            hx-post="/htmx/tarefas/{{ tarefa.id }}/update"
+          {% else %}
+            hx-post="/htmx/tarefas"
+          {% endif %}
+          hx-target="#tarefas-board-container"
+          hx-on::after-request="if(event.detail.successful) document.getElementById('global-modal').classList.remove('active');">
+        
+        <div style="display: flex; flex-direction: column; gap: 1rem;">
+            
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-weight: 600;">Título da Tarefa *</label>
+                <input type="text" name="titulo" class="form-control" placeholder="Ex: Corrigir bug de autenticação..." value="{{ tarefa.titulo if tarefa else '' }}" required autocomplete="off">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label" style="font-weight: 600;">Descrição / Observações</label>
+                <textarea name="descricao" class="form-control" rows="3" placeholder="Detalhes adicionais sobre a tarefa...">{{ tarefa.descricao if tarefa and tarefa.descricao else '' }}</textarea>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" style="font-weight: 600;">Status *</label>
+                    <select name="status" class="form-control">
+                        <option value="a_fazer" {% if tarefa and tarefa.status == 'a_fazer' %}selected{% endif %}>A Fazer</option>
+                        <option value="em_andamento" {% if tarefa and tarefa.status == 'em_andamento' %}selected{% endif %}>Em Andamento</option>
+                        <option value="concluido" {% if tarefa and tarefa.status == 'concluido' %}selected{% endif %}>Concluído</option>
+                    </select>
+                </div>
+                
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" style="font-weight: 600;">Prioridade</label>
+                    <select name="prioridade" class="form-control">
+                        <option value="baixa" {% if tarefa and tarefa.prioridade == 'baixa' %}selected{% endif %}>Baixa</option>
+                        <option value="media" {% if not tarefa or tarefa.prioridade == 'media' %}selected{% endif %}>Média</option>
+                        <option value="alta" {% if tarefa and tarefa.prioridade == 'alta' %}selected{% endif %}>Alta</option>
+                        <option value="urgente" {% if tarefa and tarefa.prioridade == 'urgente' %}selected{% endif %}>Urgente</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" style="font-weight: 600;">Data Limite (Prazo)</label>
+                    <input type="date" name="data_prazo" class="form-control" value="{{ tarefa.data_prazo.strftime('%Y-%m-%d') if tarefa and tarefa.data_prazo else '' }}">
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label class="form-label" style="font-weight: 600;">Chamado Vinculado</label>
+                    <input type="hidden" name="chamado_id" id="chamado-id-input" value="{{ tarefa.chamado_id if tarefa and tarefa.chamado_id else '' }}">
+                    
+                    <div style="position: relative;" id="chamado-picker-container">
+                        <div class="chamado-picker-trigger form-control" id="chamado-picker-trigger" tabindex="0">
+                            {% if tarefa and tarefa.chamado %}
+                                <span class="chamado-picker-selected" id="chamado-display">
+                                    <span class="badge badge-chamado">#{{ tarefa.chamado.numero }}</span>
+                                    <span class="chamado-picker-selected-title">{{ tarefa.chamado.titulo }}</span>
+                                </span>
+                            {% elif tarefa and tarefa.chamado_id %}
+                                <span class="chamado-picker-selected" id="chamado-display">
+                                    <span class="badge badge-chamado">#{{ tarefa.chamado_id }}</span>
+                                </span>
+                            {% else %}
+                                <span class="chamado-picker-placeholder" id="chamado-display">Selecionar chamado...</span>
+                            {% endif %}
+                        </div>
+
+                        <!-- Chamado Picker Popup -->
+                        <div class="chamado-picker-popup" id="chamado-picker-popup" style="display: none; position: absolute; top: calc(100% + 4px); right: 0; z-index: 101; width: 450px; max-width: 85vw;">
+                            <div class="chamado-picker-header">
+                                <span class="chamado-picker-header-title">Selecionar Chamado</span>
+                                <button type="button" class="btn btn-ghost" style="padding: 0.25rem 0.5rem; font-size: 1rem;" id="chamado-picker-close">✕</button>
+                            </div>
+                            <div class="chamado-picker-search">
+                                <input type="search" 
+                                       class="form-control" 
+                                       placeholder="Buscar por número ou título..." 
+                                       id="chamado-picker-search-input"
+                                       autocomplete="off"
+                                       hx-get="/htmx/chamado-picker/search" 
+                                       hx-trigger="input changed delay:300ms, search" 
+                                       hx-target="#chamado-picker-results"
+                                       hx-swap="innerHTML"
+                                       name="q">
+                            </div>
+                            <div id="chamado-picker-results">
+                                <!-- Conteúdo carregado via HTMX -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 0.35rem; display: flex; gap: 0.5rem;">
+                        <span class="badge badge-outline" style="cursor: pointer; font-size: 0.75rem;" id="chamado-clear-btn" tabindex="0">Sem Chamado</span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+            {% if tarefa %}
+                <button type="button" 
+                        class="btn btn-ghost" 
+                        style="color: var(--danger, #dc2626);"
+                        hx-delete="/htmx/tarefas/{{ tarefa.id }}"
+                        hx-target="#tarefas-board-container"
+                        hx-confirm="Tem certeza que deseja excluir esta tarefa?"
+                        hx-on::after-request="if(event.detail.successful) document.getElementById('global-modal').classList.remove('active');">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                    Excluir
+                </button>
+            {% else %}
+                <div></div>
+            {% endif %}
+
+            <div style="display: flex; gap: 0.5rem;">
+                <button type="button" class="btn btn-secondary" onclick="document.getElementById('global-modal').classList.remove('active');">Cancelar</button>
+                <button type="submit" class="btn btn-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                    Salvar
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
