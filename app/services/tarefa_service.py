@@ -53,7 +53,31 @@ def get_board_tarefas(session: Session) -> Dict[str, List[Tarefa]]:
             else:
                 board["concluido_anteriores"].append(t)
 
+    # Ordena por data_prazo (com prazo mais próximo primeiro, sem prazo ao final)
+    def sort_key(t: Tarefa):
+        return (t.data_prazo is None, t.data_prazo or date.max)
+
+    board["a_fazer"].sort(key=sort_key)
+    board["em_andamento"].sort(key=sort_key)
+    board["concluido_recentes"].sort(key=sort_key)
+    board["concluido_anteriores"].sort(key=sort_key)
+
     return board
+
+def move_tarefa(session: Session, tarefa_id: int, new_status: TarefaStatus) -> Tarefa:
+    db_tarefa = get_tarefa(session, tarefa_id)
+    if db_tarefa.status != new_status:
+        old_status = db_tarefa.status
+        db_tarefa.status = new_status
+        if new_status == TarefaStatus.CONCLUIDO and old_status != TarefaStatus.CONCLUIDO:
+            db_tarefa.data_conclusao = datetime.utcnow()
+        elif new_status != TarefaStatus.CONCLUIDO:
+            db_tarefa.data_conclusao = None
+        db_tarefa.updated_at = datetime.utcnow()
+        session.add(db_tarefa)
+        session.commit()
+        session.refresh(db_tarefa)
+    return db_tarefa
 
 def update_tarefa(session: Session, tarefa_id: int, tarefa_in: TarefaUpdate) -> Tarefa:
     db_tarefa = get_tarefa(session, tarefa_id)

@@ -74,6 +74,7 @@ def htmx_form_new_tarefa(request: Request, session: Session = Depends(get_sessio
         name="partials/tarefa_form_modal.html",
         context={
             "tarefa": None,
+            "today_str": date.today().strftime("%Y-%m-%d"),
             "chamados": chamados,
             "statuses": [e.value for e in models.TarefaStatus],
             "prioridades": [e.value for e in models.TarefaPrioridade]
@@ -89,6 +90,7 @@ def htmx_form_edit_tarefa(tarefa_id: int, request: Request, session: Session = D
         name="partials/tarefa_form_modal.html",
         context={
             "tarefa": tarefa,
+            "today_str": date.today().strftime("%Y-%m-%d"),
             "chamados": chamados,
             "statuses": [e.value for e in models.TarefaStatus],
             "prioridades": [e.value for e in models.TarefaPrioridade]
@@ -161,6 +163,22 @@ def htmx_update_tarefa(
 @router.delete("/htmx/tarefas/{tarefa_id}")
 def htmx_delete_tarefa(tarefa_id: int, request: Request, session: Session = Depends(get_session)):
     tarefa_service.delete_tarefa(session, tarefa_id)
+    board = tarefa_service.get_board_tarefas(session)
+    return templates.TemplateResponse(
+        request=request,
+        name="partials/tarefas_board.html",
+        context={"board": board, "today": date.today()}
+    )
+
+@router.post("/htmx/tarefas/{tarefa_id}/move")
+def htmx_move_tarefa(
+    tarefa_id: int,
+    request: Request,
+    status: str = Form(...),
+    session: Session = Depends(get_session)
+):
+    new_status = models.TarefaStatus(status)
+    tarefa_service.move_tarefa(session, tarefa_id, new_status)
     board = tarefa_service.get_board_tarefas(session)
     return templates.TemplateResponse(
         request=request,

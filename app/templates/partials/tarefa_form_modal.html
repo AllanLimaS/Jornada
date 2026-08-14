@@ -50,7 +50,7 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                 <div class="form-group" style="margin-bottom: 0;">
                     <label class="form-label" style="font-weight: 600;">Data Limite (Prazo)</label>
-                    <input type="date" name="data_prazo" class="form-control" value="{{ tarefa.data_prazo.strftime('%Y-%m-%d') if tarefa and tarefa.data_prazo else '' }}">
+                    <input type="text" name="data_prazo" class="form-control js-datepicker" value="{{ tarefa.data_prazo.strftime('%Y-%m-%d') if tarefa and tarefa.data_prazo else (today_str if not tarefa else '') }}" placeholder="dd/mm/aaaa" autocomplete="off">
                 </div>
 
                 <div class="form-group" style="margin-bottom: 0;">
