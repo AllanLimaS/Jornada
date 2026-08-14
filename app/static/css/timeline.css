@@ -205,3 +205,29 @@
 .timeline-card-meta {
     margin-top: 0;
 }
+
+/* =============================================================================
+   Feedback Visual Discreto para Choque de Horário (Linha e Bolinhas Vermelhas)
+   ============================================================================= */
+
+/* Linha da timeline vermelha em caso de choque */
+.timeline-slot.has-overlap .timeline-card-container {
+    border-left-color: #ef4444 !important;
+}
+
+/* Bolinha decorativa da linha da timeline em vermelho */
+.timeline-slot.has-overlap .timeline-card-container::after {
+    border-color: #ef4444 !important;
+    background-color: #ef4444 !important;
+    box-shadow: 0 0 6px rgba(239, 68, 68, 0.4);
+}
+
+/* Bolinha de status interna do card em vermelho */
+.timeline-slot.has-overlap .timeline-status-dot {
+    background-color: #ef4444 !important;
+}
+
+/* Borda esquerda do card em vermelho */
+.timeline-slot.has-overlap .timeline-card {
+    border-left: 3px solid #ef4444 !important;
+}

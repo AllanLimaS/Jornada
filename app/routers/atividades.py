@@ -108,12 +108,32 @@ def _render_timeline(request: Request, session: Session, data_ref: date_type):
     """Helper: renderiza a timeline de atividades de uma data específica."""
     atividades = atividade_service.get_atividades_by_date(session, data_ref)
     atividades.sort(key=lambda x: (x.hora_inicio is None, x.hora_inicio))
+
+    # Detecção de choques de horário (sobreposições)
+    overlap_ids = set()
+    for i in range(len(atividades)):
+        a1 = atividades[i]
+        if not a1.hora_inicio or not a1.hora_fim:
+            continue
+        start1 = a1.hora_inicio.hour * 60 + a1.hora_inicio.minute
+        end1 = a1.hora_fim.hour * 60 + a1.hora_fim.minute
+
+        for j in range(i + 1, len(atividades)):
+            a2 = atividades[j]
+            if not a2.hora_inicio or not a2.hora_fim:
+                continue
+            start2 = a2.hora_inicio.hour * 60 + a2.hora_inicio.minute
+            end2 = a2.hora_fim.hour * 60 + a2.hora_fim.minute
+
+            if start1 < end2 and start2 < end1:
+                overlap_ids.add(a1.id)
+                overlap_ids.add(a2.id)
+
     total_minutos = sum(atv.duracao_minutos for atv in atividades)
     horas = total_minutos // 60
     minutos = total_minutos % 60
-    minutos = total_minutos % 60
     is_today = (data_ref == date_type.today())
-    
+
     # Cálculo de horário dinâmico para a agenda (Mínimo 08h e Máximo 18h)
     min_h = 8
     max_h = 18
@@ -122,14 +142,15 @@ def _render_timeline(request: Request, session: Session, data_ref: date_type):
             min_h = atv.hora_inicio.hour
         if atv.hora_fim and atv.hora_fim.hour >= max_h:
             max_h = atv.hora_fim.hour + 1
-            
+
     return templates.TemplateResponse(
         request=request,
         name="partials/timeline_list.html",
         context={
-            "atividades": atividades, 
-            "total_horas": horas, 
-            "total_minutos": minutos, 
+            "atividades": atividades,
+            "overlap_ids": list(overlap_ids),
+            "total_horas": horas,
+            "total_minutos": minutos,
             "is_today": is_today,
             "min_h": min_h,
             "max_h": max_h,

@@ -4,30 +4,30 @@
     {% set ns = namespace(prev_end=None) %}
     {% for atv in atividades %}
         
-        {# Detecção de Intervalo (Gap) #}
+        {# Detecção de Intervalo (Gap) entre atividades não sobrepostas #}
         {% if ns.prev_end and atv.hora_inicio %}
             {% set current_start_mins = atv.hora_inicio.hour * 60 + atv.hora_inicio.minute %}
             {% set prev_end_mins = ns.prev_end.hour * 60 + ns.prev_end.minute %}
-            {% set gap_mins = current_start_mins - prev_end_mins %}
+            {% set diff_mins = current_start_mins - prev_end_mins %}
             
-            {% if gap_mins > 5 %}
+            {% if diff_mins > 5 %}
                 <div class="timeline-gap">
-                    {% if gap_mins >= 60 %}
-                        {{ (gap_mins / 60) | int }}h {{ gap_mins % 60 }}m de intervalo
+                    {% if diff_mins >= 60 %}
+                        {{ (diff_mins / 60) | int }}h {{ diff_mins % 60 }}m de intervalo
                     {% else %}
-                        {{ gap_mins }} min de intervalo
+                        {{ diff_mins }} min de intervalo
                     {% endif %}
                 </div>
             {% endif %}
         {% endif %}
 
-        <div class="timeline-slot">
+        <div class="timeline-slot {% if atv.id in overlap_ids %}has-overlap{% endif %}">
             <div class="timeline-time-label">
                 {{ atv.hora_inicio.strftime('%H:%M') if atv.hora_inicio else '--:--' }}
             </div>
             
             <div class="timeline-card-container">
-                <div class="timeline-card status-{{ atv.portal_status.value }}" 
+                <div class="timeline-card status-{{ atv.portal_status.value if atv.portal_status.value is defined else (atv.portal_status | lower) }} {% if atv.id in overlap_ids %}has-overlap{% endif %}" 
                      hx-get="/htmx/atividades/{{ atv.id }}/form-edit?view_date={{ view_date_str }}" 
                      hx-target="#global-modal-body">
                     
@@ -57,13 +57,14 @@
                                 {% endif %}
                             {% endif %}
                         </span>
+
                         {% if atv.chamado_id %}
                             {% set ch = chamados_map.get(atv.chamado_id) if chamados_map else None %}
                             <span>•</span>
                             {{ chamado_badge(atv.chamado) }}
                         {% endif %}
                         <span>•</span>
-                        <span style="text-transform: capitalize;">{{ atv.portal_status.value }}</span>
+                        <span style="text-transform: capitalize;">{{ atv.portal_status.value if atv.portal_status.value is defined else (atv.portal_status | lower) }}</span>
                     </div>
 
                     <div class="timeline-card-desc">{{ atv.descricao }}</div>
@@ -71,7 +72,11 @@
             </div>
         </div>
         
-        {% set ns.prev_end = atv.hora_fim %}
+        {% if atv.hora_fim %}
+            {% if not ns.prev_end or atv.hora_fim > ns.prev_end %}
+                {% set ns.prev_end = atv.hora_fim %}
+            {% endif %}
+        {% endif %}
     {% endfor %}
 </div>
 
